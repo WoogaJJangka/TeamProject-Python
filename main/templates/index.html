@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -41,3 +42,48 @@
     </table>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>보드게임</title>
+    <style>
+        table.board { border-collapse: collapse; }
+        table.board td {
+            width: 80px; height: 80px;
+            text-align: center; vertical-align: middle;
+            border: 1px solid #000; font-size: 12px;
+        }
+        .event { background-color: #ccc; }
+        .land { background-color: #fff; }
+        .owner-red { background-color: #f88; }
+        .owner-blue { background-color: #88f; }
+        .owner-green { background-color: #8f8; }
+        .owner-yellow { background-color: #ff8; }
+        .player-marker { display: block; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>현재 턴: 
+        {% if current_turn == 'red' %}<span style="color: red;">빨강</span>
+        {% elif current_turn == 'blue' %}<span style="color: blue;">파랑</span>
+        {% elif current_turn == 'green' %}<span style="color: green;">초록</span>
+        {% elif current_turn == 'yellow' %}<span style="color: orange;">노랑</span>
+        {% endif %} 플레이어
+    </h2>
+
+    <table class="board">
+        {% for row in board %}<tr>
+        {% for tile in row %}<td class="{% if tile %}{{ tile.type }} {% if tile.owner %}owner-{{ tile.owner }}{% endif %}{% endif %}">
+            {% if tile %}
+                <div>{{ tile.name }}</div>
+                {% if tile.upgrade > 0 %}<div>LV{{ tile.upgrade }}</div>{% endif %}
+                {% for player in tile.players %}<span class="player-marker">{{ player[0]|upper }}</span>{% endfor %}
+            {% endif %}
+        </td>{% endfor %}
+        </tr>{% endfor %}
+    </table>
+</body>
+</html>
+>>>>>>> 03ef5a75298ff18032c20f31e4eb5562f738139d
