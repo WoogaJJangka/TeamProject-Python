@@ -1,10 +1,10 @@
 import pygame
 import random
-import BoardScreen as BS
+import BoardScreen as BS # 뒷배경 함수 불러오기
 
 pygame.init()
 
-BS.BoardScreen()
+BS.BoardScreen() # 뒷배경 그리기 함수 실행
 
 done = False
 while not done:
