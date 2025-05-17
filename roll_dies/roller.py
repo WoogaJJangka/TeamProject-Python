@@ -7,13 +7,13 @@ import time
 class DiceRoller: 
     def __init__(self, screen, image_folder_path, size=(100, 100)):
         self.screen = screen # 스크린 변수 
-        self.image_folder_path = image_folder_path #폴더 주소
-        self.size = size #창 사이즈
+        self.image_folder_path = image_folder_path # 폴더 주소
+        self.size = size # 창 사이즈
         self.dice_imgs = self._load_dice_images() # 이미지 불러오기
 
-    def _load_dice_images(self): #이미지 불러오기 함수
+    def _load_dice_images(self): # 이미지 불러오기 함수
         imgs = []
-        for i in range(1, 7): #1~6까지 반복
+        for i in range(1, 7): # 1~6까지 반복
             img_path = os.path.join(self.image_folder_path, f"dice{i}.png") # 이미지파일 경로를 가져오기
             img = pygame.image.load(img_path) # img에 이미지를 로드하기 
             img = pygame.transform.scale(img, self.size) # 이미지 크기 변경
