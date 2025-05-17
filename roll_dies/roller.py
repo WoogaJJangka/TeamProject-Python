@@ -3,10 +3,11 @@ import os
 import random
 import time
 
-class DiceRoller:
+# 주사위 굴리기 모션
+class DiceRoller: 
     def __init__(self, screen, image_folder_path, size=(100, 100)):
-        self.screen = screen
-        self.image_folder_path = image_folder_path
+        self.screen = screen # 스크린 변수 
+        self.image_folder_path = image_folder_path 
         self.size = size
         self.dice_imgs = self._load_dice_images()
 

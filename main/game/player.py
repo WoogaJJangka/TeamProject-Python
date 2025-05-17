@@ -1,5 +1,5 @@
 class Player: # 플레이어 클래스
-    def __init__(self, pid, color): # 플레이어 기본 설정
+    def __init__(self, color): # 플레이어 기본 설정
         self.color = color  # 플레이어 색깔 (red, blue, green, yellow)
         self.money = 5000 # 시작 돈
         self.position = 0 # 시작 위치
