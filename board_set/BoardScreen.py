@@ -41,7 +41,7 @@ def BoardScreen(): # 보드판 그리기
 
     # 한반도 사진 넣기
 
-    img_한반도 = pygame.image.load("한반도.png") # 한반도 사진 불러오기
+    img_한반도 = pygame.image.load("board_set\\한반도.png") # 한반도 사진 불러오기
     img_한반도 = pygame.transform.scale(img_한반도,(200,400)) # 사진 크기 조정
     background.blit(img_한반도,(650,300)) # 사진 위치 조정
 
