@@ -262,3 +262,69 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm+all,python
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+# Virtual environment
+venv/
+.venv/
+ENV/
+env/
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pyinstaller
+*.spec
+
+# ===== VSCode =====
+.vscode/
+
+# VSCode Python settings
+.settings/
+
+# ===== PyCharm =====
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ===== OS-specific =====
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+
+# ===== Test/coverage =====
+.coverage
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.pytest_cache/
+.tox/
+.pytest_cache/
+htmlcov/
+
+# Optional: ignore your own saves/logs
+save_data/
+*.save
+
+# ===== Others =====
+*.swp
+*.bak
+*.tmp
