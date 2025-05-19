@@ -36,13 +36,13 @@ class Tile:  # 타일 설정하기 클래스
 
     def tile_word(self,background): # 글씨 써 넣는 메서드
         pygame.draw.rect(background, (255, 255, 255), self.mouse_position, 100)
-        font = pygame.font.Font("font.ttf", self.name_size)
+        font = pygame.font.Font("board_set/font.ttf", self.name_size)
         font = font.render(self.name, True, (0, 0, 0))
         background.blit(font, self.name_position)
 
     def tile_cog_color(self,background):
         pygame.draw.rect(background, self.color, self.mouse_position, 100)
-        font = pygame.font.Font("font.ttf", self.name_size)
+        font = pygame.font.Font("board_set/font.ttf", self.name_size)
         font = font.render(self.name, True, (0, 0, 0))
         background.blit(font, self.name_position)
 
