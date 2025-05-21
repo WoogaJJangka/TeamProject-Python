@@ -1,6 +1,6 @@
 import pygame
 import random 
-from roller import DiceRoller
+from roll_dies.roller import DiceRoller
 
 
 pygame.init() # 파이게임 초기화
@@ -11,17 +11,19 @@ clock = pygame.time.Clock() # 시간 변수 설정
 roller = DiceRoller(screen, "roll_dies\\assets")  # 이미지 폴더 경로
 
 def roll_dice(): # 주사위 굴리기기
-        result1 , result2 = roller.roll_two_dice()
-        step = result1 + result2
-        if result1 == result2:
-            print(f"🎲 주사위 결과: {result1}, {result2}")
-            step += sum(roller.roll_two_dice())
-            print(step ,'1')
-            return step
-        else:
-            print(f"🎲 주사위 결과: {result1}, {result2}")
-            print(step ,'2')
-            return step
+        result1 , result2 = roller.roll_two_dice() # 2개의 주사위 결과를 받기
+        step = result1 + result2 # 이동할 거리를 계산
+        if result1 == result2: # 두 주사위 결과를 비교 (같으면)
+            print(f"🎲 주사위 결과: {result1}, {result2}") # 결과를 터미널에 표시
+            sec_result1 , sec_result2 = roller.roll_two_dice() # 이동거리에 이 함수를 한 번 더 실행한 값(두 주사위의 결과)를 합한 값을 더함
+            print(f"🎲 주사위 결과: {sec_result1}, {sec_result2}")
+            step += (sec_result1 + sec_result2)
+            print(step ,'1') #2만약 두 주사위의 눈이 같아서 한 번 더 주사위를 굴렸다면, 총 이동거리와 1 을 표시
+            return step # 이동거를 반환
+        else: # 두 주사위의 결과가 같지 않다면
+            print(f"🎲 주사위 결과: {result1}, {result2}") # 주사위의 결과를 표시
+            print(step ,'2') # 총 이동거리와 2를 표시
+            return step # 이동거리를 반환
         
 
 running = True # 작동 상태
