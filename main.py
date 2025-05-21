@@ -1,3 +1,3 @@
-from roll_dies import dicemain
+from roll_dices import dicemain
 
 dicemain.roll_dice()
