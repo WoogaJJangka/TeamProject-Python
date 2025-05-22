@@ -21,7 +21,16 @@ class DiceRoller:
 
         return imgs
 
-    def roll_two_dice(self, pos1=(80, 100), pos2=(220, 100), roll_times=20, delay=50): # 주사위 2개르 돌리기
+    def roll_two_dice(self, pos1=None, pos2=None, roll_times=20, delay=50):
+        # 화면 중앙에 주사위 위치 계산
+        if pos1 is None or pos2 is None:
+            screen_w, screen_h = self.screen.get_size()
+            dice_w, dice_h = self.size
+            total_w = dice_w * 2 + 40  # 주사위 사이 간격 40px
+            start_x = (screen_w - total_w) // 2
+            y = (screen_h - dice_h) // 2
+            pos1 = (start_x, y)
+            pos2 = (start_x + dice_w + 40, y)
         idx1 = idx2 = 0 # 주사위 1,2의 초기값을 0으로 설정
         print(self.screen)
         for _ in range(roll_times): # 주사위가 돌아가는 시간 설정
