@@ -5,10 +5,10 @@ import time
 
 # 주사위 클래스
 class DiceRoller: 
-    def __init__(self, screen, image_folder_path, size=(100, 100)):
+    def __init__(self, screen, image_folder_path, size = (100,100)):
         self.screen = screen # 스크린 변수 
         self.image_folder_path = image_folder_path # 폴더 주소
-        self.size = size # 창 사이즈
+        self.size = size # 주사위 사이즈
         self.dice_imgs = self._load_dice_images() # 이미지 불러오기
 
     def _load_dice_images(self): # 이미지 불러오기 함수
@@ -21,20 +21,28 @@ class DiceRoller:
 
         return imgs
 
-    def roll_two_dice(self, pos1=(80, 100), pos2=(220, 100), roll_times=20, delay=50): # 주사위 2개르 돌리기
+    def roll_two_dice(self, pos1=None, pos2=None, roll_times=20, delay=50):
+        # 화면 중앙에 주사위 위치 계산
+        if pos1 is None or pos2 is None:
+            screen_w, screen_h = self.screen.get_size()
+            dice_w, dice_h = self.size
+            total_w = dice_w * 2 + 40  # 주사위 사이 간격 40px
+            start_x = (screen_w - total_w) // 2
+            y = (screen_h - dice_h) // 2
+            pos1 = (start_x, y)
+            pos2 = (start_x + dice_w + 40, y)
         idx1 = idx2 = 0 # 주사위 1,2의 초기값을 0으로 설정
+        print(self.screen)
         for _ in range(roll_times): # 주사위가 돌아가는 시간 설정
             idx1 = random.randint(0, 5) # 주사위 값 랜덤 부여(1~6)
             idx2 = random.randint(0, 5) # 주사위 값 랜덤 부여 (1~6)
 
-            self.screen.fill((255, 255, 255)) # 스크린을 하안색으로 채우기 
             self.screen.blit(self.dice_imgs[idx1], pos1) # 주사위 값에 맞는 이미지를 위치에 불러옴
             self.screen.blit(self.dice_imgs[idx2], pos2) # 주사위 값에 맞는 이미지를 위치에 불러옴
             pygame.display.update() # 설정한 디스플레이를 불러옴
             pygame.time.delay(delay) # 주사위를 확인할 시간을 줌
 
         # 🎯 최종 결과를 다시 그려서 고정시킴
-        self.screen.fill((255, 255, 255)) # 스크린에 하얀색을 채우기
         self.screen.blit(self.dice_imgs[idx1], pos1) # 주사위 첫 번째 값에 맞는 이미지를 pos1에 불러오기
         self.screen.blit(self.dice_imgs[idx2], pos2) # 주사위 두 번째 값에 맞는 이미지를 pos2에 불러오기
         pygame.display.update()
@@ -42,3 +50,14 @@ class DiceRoller:
 
         return idx1 + 1, idx2 + 1
 
+    def roll_dice(self): # 주사위 굴리기기
+        result1 , result2 = self.roll_two_dice() # 2개의 주사위 결과를 받기
+        print(f"🎲 주사위 결과: {result1}, {result2}") # 결과를 터미널에 표시
+        step = (result1 + result2)
+        print(step , 0)
+        while result1 == result2:
+                result1 , result2 = self.roll_two_dice()
+                print(f"🎲 주사위 결과: {result1}, {result2}") # 결과를 터미널에 표시
+                step += (result1 + result2)
+                print (step ,1)
+        return step
