@@ -13,12 +13,12 @@ roller = DiceRoller(screen, "roll_dices\\assets")  # 이미지 폴더 경로
 def roll_dice(): # 주사위 굴리기기
         result1 , result2 = roller.roll_two_dice() # 2개의 주사위 결과를 받기
         print(f"🎲 주사위 결과: {result1}, {result2}") # 결과를 터미널에 표시
-        step = (result1 + result2)
-        print(step , 0)
-        while result1 == result2:
-                result1 , result2 = roller.roll_two_dice()
+        step = (result1 + result2) # 이동거리 = 주사위 숫자 합
+        print(step , 0) 
+        while result1 == result2: # 두 주사위의 눈이 같으면
+                result1 , result2 = roller.roll_two_dice() # 주사위 다시 굴리기
                 print(f"🎲 주사위 결과: {result1}, {result2}") # 결과를 터미널에 표시
-                step += (result1 + result2)
+                step += (result1 + result2) # 이동거리에 주사위 수 더하기
                 print (step ,1)
         return step
         
