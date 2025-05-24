@@ -14,6 +14,7 @@ import os
 from board_set.BoardScreen import BoardScreen
 from board_set.Tile import Tile
 from roll_dices.roller import DiceRoller
+import game
 
 pygame.init()
 clock = pygame.time.Clock()
