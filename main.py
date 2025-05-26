@@ -3,6 +3,7 @@ import os
 from board_set.BoardScreen import BoardScreen
 from board_set import TileDeco
 from roll_dices.roller import DiceRoller
+import game
 
 pygame.init()
 clock = pygame.time.Clock()
