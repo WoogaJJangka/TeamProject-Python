@@ -2,8 +2,9 @@ import pygame
 import os
 from board_set.BoardScreen import BoardScreen
 from board_set import TileDeco
+import game.game_manager as gm
 from roll_dices.roller import DiceRoller
-import game
+import game.player as player
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -23,6 +24,9 @@ for name in all_local:
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
 
+# 플레이어 객체 생성
+game_manager = gm.GameManager()
+
 running = True
 while running:
     clock.tick(60)
@@ -31,9 +35,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # 스페이스바 누르면 주사위 굴리기
-            roller.roll_dice()
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                steps = roller.roll_dice()
+                current_player = game_manager.get_current_player()
+                current_player.move(steps)
+                print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+                print(f"현재 위치: {current_player.position}")
+                game_manager.turn_over()  # 턴 넘기기
 
     # 마우스가 타일 위에 있으면 색상 변경
     for m_p in all_local:
@@ -46,4 +56,4 @@ while running:
     pygame.display.update()
 
 pygame.quit()
-
+# 게임 종료

@@ -1,6 +1,6 @@
 import random
-import player # 플레이어 클래스를 불러옴
-import tile_info
+import game.player as player# 플레이어 클래스를 불러옴
+import game.tile_info as tile_info # 타일 정보를 불러옴
 # 게임 매니저 클래스
 class GameManager:
     
@@ -17,6 +17,9 @@ class GameManager:
     
         return self.players[self.current_player_index].color
 
+    def get_current_player(self): # 현제 플레이어 객체 반환
+        return self.players[self.current_player_index]
+    
     def turn_over(self):
         self.current_player_index = (self.current_player_index + 1) % 4
         return self.current_player_index
