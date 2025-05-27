@@ -11,7 +11,7 @@ class GameManager:
         ]
         self.current_player_index = 0 # 현제 플레이어 인덱스
         
-        self.tiles = [tile_info.Tile(f"땅 {i+1}", i) for i in range(20)] # 20개의 타일을 생성 ('땅 1', 0)
+        self.tiles = [tile_info.Tile(f"땅 {i+1}", i) for i in range(20)] # 20개의 타일을 생성 (0, 19)
 
     def get_current_player_color(self): # 현제 플레이어 색깔 반환
     
@@ -20,19 +20,15 @@ class GameManager:
     def get_current_player(self): # 현제 플레이어 객체 반환
         return self.players[self.current_player_index]
     
-    def turn_over(self):
+    def turn_over(self): # 턴을 넘기는 메서드
         self.current_player_index = (self.current_player_index + 1) % 4
         return self.current_player_index
     
-    def buy_tile(self, tile_index, player_index):
-        tile = self.tiles[tile_index]
+    def buy_tile(self, tile_index, player_index): # 타일 구메 메서드
         player = self.players[player_index]
+        tile = self.tiles[tile_index] 
         
-        # 이미 소유된 타일은 구매 불가
-        if tile.owner is not None:
-            return False, f"{tile.name}은(는) 이미 소유자가 있습니다."
-
-        # 플레이어 돈 확인
+         # 플레이어 돈 확인
         if player.pay(tile.price):
             tile.owner = player
             player.properties.append(tile)
@@ -79,3 +75,18 @@ class GameManager:
         else:
             # 돈이 부족해도 pay()는 음수로 만들고 False 반환함
             return False, f"{player.color} 플레이어는 통행료 ₩{toll}을 낼 수 없습니다. (잔액 부족)"
+        
+    def tile_event(self, tile_index, player_index):
+        player = self.players[player_index]
+        tile = self.tiles[tile_index]
+
+        # 타일 소유 여부 확인
+        if tile.owner is None:
+            # 타일이 비어있으면 구매 가능
+            return self.buy_tile(tile_index, player_index)
+        elif tile.owner == player:
+            # 자기 소유 타일이면 업그레이드 가능
+            return self.upgrade_tile(tile_index, player_index)
+        else:
+            # 다른 플레이어 소유 타일이면 통행료 지불
+            return self.pay_toll(tile_index, player_index)

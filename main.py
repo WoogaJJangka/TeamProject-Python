@@ -38,12 +38,31 @@ while running:
         
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                steps = roller.roll_dice()
-                current_player = game_manager.get_current_player()
-                current_player.move(steps)
-                print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
-                print(f"현재 위치: {current_player.position}")
-                game_manager.turn_over()  # 턴 넘기기
+                if game_manager.get_current_player().is_bankrupt:
+                    print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
+                    game_manager.turn_over()
+                else:
+                    steps = roller.roll_dice()
+                    current_player = game_manager.get_current_player()
+                    current_player.move(steps)
+                    print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+                    print(f"현재 위치: {current_player.position}")
+                    succes, massage = game_manager.tile_event(current_player.position, current_player.turn)
+                    print(massage)
+                    game_manager.turn_over()  # 턴 넘기기
+
+            # F1 + p (커맨드)
+            elif event.key == pygame.K_p:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
+                
+            # F1 + m (커맨드)
+            elif event.key == pygame.K_m:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
+
 
     # 마우스가 타일 위에 있으면 색상 변경
     for m_p in all_local:
@@ -52,7 +71,7 @@ while running:
             m_p.tile_cog_color(background)
         else:
             m_p.tile_word(background)
-
+            
     pygame.display.update()
 
 pygame.quit()

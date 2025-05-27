@@ -12,5 +12,7 @@ class Player: # 플레이어 클래스
 
     def pay(self, amount): # 돈 지불
         self.money -= amount # 현재 돈에서 지불금을 빼기
-        if self.money < 0: # 만약 현재 돈이 0보 작으면 False를 리턴
-            return False
+        if self.money >= 0: # 만약 현재 돈이 0 이상이면 True를 리턴
+            return True
+        elif self.money < 0:
+            return False # 만약 현재 돈이 0보다 작으면 False를 리턴
