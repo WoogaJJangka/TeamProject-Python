@@ -18,7 +18,7 @@ all_local = TileDeco.all_local()
 
 # 타일 글씨 그리기
 for name in all_local:
-    TileDeco.Tile.tile_word(name, background)
+    TileDeco.TileDeco.tile_word(name, background)
 
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
@@ -41,14 +41,22 @@ while running: # 게임이 실행중인 동안
                     print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 else:
-                    steps = roller.roll_dice()
-                    current_player = game_manager.get_current_player()
-                    current_player.move(steps)
+                    steps = roller.roll_dice() # 주사위 굴리기 이동 할 칸 받기
+                    current_player = game_manager.get_current_player() # 현재 플레이어 객체 받기
+                    current_player.move(steps) # 플레이어 이동
+                    # 이동 로그 출력
                     print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    succes, message = game_manager.tile_event(current_player.position, current_player.turn)
-                    print(message)
-                    game_manager.turn_over()  # 턴 넘기기
+                    # 타일 이벤트 처리
+                    if current_player.position == 5:
+                        print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
+                        succes, message = game_manager.teleport_player(current_player.turn, 0)
+                        print(message)
+                        game_manager.turn_over()  # 턴 넘기기
+                    else:
+                        succes, message = game_manager.tile_event(current_player.position, current_player.turn)
+                        print(message)
+                        game_manager.turn_over()  # 턴 넘기기
 
             # F1 + p (커맨드)
             elif event.key == pygame.K_p:
@@ -61,6 +69,15 @@ while running: # 게임이 실행중인 동안
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_F1]:
                     print(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
+                    
+            # F1 + t (커맨드)
+            elif event.key == pygame.K_t:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    selected_player_index = int(input("플레이어 인덱스를 입력하세요 (0-3): "))
+                    destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
+                    game_manager.teleport_player(selected_player_index, destination_tile_index)
+
 
 
     # 마우스가 타일 위에 있으면 색상 변경

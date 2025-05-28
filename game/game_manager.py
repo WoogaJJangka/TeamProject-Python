@@ -23,8 +23,8 @@ class GameManager:
         return self.current_player_index
     
     def buy_tile(self, tile_index, player_index): # 타일 구메 메서드
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
+        player = self.players[player_index]
         
          # 플레이어 돈 확인
         if player.pay(tile.price):
@@ -35,8 +35,9 @@ class GameManager:
             return False, f"{player.color} 플레이어는 {tile.name}을(를) 구매할 돈이 부족합니다."
 
     def upgrade_tile(self, tile_index, player_index):
-        player = self.players[player_index]  # 인덱스로 플레이어 객체 접근
         tile = self.tiles[tile_index]
+        player = self.players[player_index]
+        
 
         # 소유 여부 확인
         if tile.owner != player:
@@ -57,9 +58,9 @@ class GameManager:
             return False, f"{player.color} 플레이어는 업그레이드 비용 ₩{cost}가 부족합니다."
 
     def pay_toll(self, tile_index, player_index):
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
-
+        player = self.players[player_index]
+        
         # 땅에 주인이 없거나, 자기 자신이라면 통행료 없음
         if tile.owner is None or tile.owner == player:
             return False, "통행료를 지불할 필요가 없습니다."
@@ -77,10 +78,10 @@ class GameManager:
             else:
                 return True, log + [f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."]
         
-    def tile_event(self, tile_index, player_index):
-        player = self.players[player_index]
+    def tile_event(self, tile_index, player_index): # 일반 타일을 받았을 때 실행되는 메서드
         tile = self.tiles[tile_index]
-
+        player = self.players[player_index]
+        
         # 타일 소유 여부 확인
         if tile.owner is None:
             # 타일이 비어있으면 구매 가능
@@ -127,3 +128,10 @@ class GameManager:
             player.is_bankrupt = True
             log.append(f"{player.color} 플레이어는 파산했습니다.")
             return True, log
+    
+    def teleport_player(self, player_index, destination_index): # 플레이어를 순간이동시키는 메서드
+        player = self.players[player_index]
+        # 이동 처리
+        player.position = destination_index
+
+        return True, f"{player.color} 플레이어가 {destination_index}번 타일로 순간이동했습니다."
