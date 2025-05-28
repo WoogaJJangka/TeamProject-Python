@@ -1,4 +1,3 @@
-
 class Tile: # 타일 클래스
     def __init__(self, name, position): # 타일 기본 설정
         self.name = name # 타일 이름

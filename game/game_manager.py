@@ -1,5 +1,5 @@
 import random
-from tile import Tile # 타일 클레스를 불러옴
+from tile_info import Tile # 타일 클레스를 불러옴
 from player import Player # 플레이어 클래스를 불러옴
 
 # 게임 매니저 클래스
