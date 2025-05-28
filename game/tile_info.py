@@ -1,9 +1,9 @@
 class Tile: # 타일 클래스
-    def __init__(self, name, position): # 타일 기본 설정
+    def __init__(self, name, position, price = 1000): # 타일 기본 설정
         self.name = name # 타일 이름
         self.position = position # 타일 위치
         self.owner = None # 타일 소유자
-        self.price = 1000 # 타일 가격
+        self.price = price # 타일 가격
         self.toll = int(self.price * 1.3) # 타일 세금
         self.upgrade_level = 0 # 업그레이드 레벨
 

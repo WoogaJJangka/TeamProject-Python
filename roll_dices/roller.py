@@ -32,7 +32,7 @@ class DiceRoller:
             pos1 = (start_x, y) # 첫 번째 주사위 생성 좌표
             pos2 = (start_x + dice_w + 40, y) # 두 번째 주사위 생성 좌표
         idx1 = idx2 = 0 # 주사위 1,2의 초기값을 0으로 설정
-        print(self.screen)
+        
         for _ in range(roll_times): # 주사위가 돌아가는 시간 설정
             idx1 = random.randint(0, 5) # 주사위 값 랜덤 부여(1~6)
             idx2 = random.randint(0, 5) # 주사위 값 랜덤 부여 (1~6)
