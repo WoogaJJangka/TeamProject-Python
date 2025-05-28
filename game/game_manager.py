@@ -2,7 +2,7 @@ import game.player as player# 플레이어 클래스를 불러옴
 import game.tile_info as tile_info # 타일 정보를 불러옴
 # 게임 매니저 클래스
 class GameManager:
-    
+    ''' 게임의 상태를 관리하는 클래스 '''
     def __init__(self): # 플레이어 와 타일을 셋팅
         self.players = [
             player.Player(0, 'red'), player.Player(1, 'blue'),
@@ -12,14 +12,7 @@ class GameManager:
         
         self.tiles = [tile_info.Tile(f"땅 {i+1}", i) for i in range(20)] # 20개의 타일을 생성 (0, 19)
         
-        
-        self.players[0].money = 2000
-        self.players[2].money = 2000        
-        
-        
-
     def get_current_player_color(self): # 현제 플레이어 색깔 반환
-    
         return self.players[self.current_player_index].color
 
     def get_current_player(self): # 현제 플레이어 객체 반환
@@ -31,7 +24,7 @@ class GameManager:
     
     def buy_tile(self, tile_index, player_index): # 타일 구메 메서드
         player = self.players[player_index]
-        tile = self.tiles[tile_index] 
+        tile = self.tiles[tile_index]
         
          # 플레이어 돈 확인
         if player.pay(tile.price):
