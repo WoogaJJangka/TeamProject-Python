@@ -1,6 +1,6 @@
 import pygame
 import random 
-from roll_dices.roller import DiceRoller
+from roller import DiceRoller
 
 
 pygame.init() # 파이게임 초기화

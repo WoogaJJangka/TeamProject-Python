@@ -1,4 +1,3 @@
-import random
 import game.player as player# 플레이어 클래스를 불러옴
 import game.tile_info as tile_info # 타일 정보를 불러옴
 # 게임 매니저 클래스
@@ -12,6 +11,12 @@ class GameManager:
         self.current_player_index = 0 # 현제 플레이어 인덱스
         
         self.tiles = [tile_info.Tile(f"땅 {i+1}", i) for i in range(20)] # 20개의 타일을 생성 (0, 19)
+        
+        
+        self.players[0].money = 2000
+        self.players[2].money = 2000        
+        
+        
 
     def get_current_player_color(self): # 현제 플레이어 색깔 반환
     
@@ -73,8 +78,11 @@ class GameManager:
             tile.owner.money += toll
             return True, f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."
         else:
-            # 돈이 부족해도 pay()는 음수로 만들고 False 반환함
-            return False, f"{player.color} 플레이어는 통행료 ₩{toll}을 낼 수 없습니다. (잔액 부족)"
+            is_bankrupt, log = self.check_and_handle_bankruptcy(player_index, toll) # 통행료를 지불 할 수 있는지 확인
+            if is_bankrupt: # 파산 상태라면
+                return False, log # False와 로그를 반환
+            else:
+                return True, log + [f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."]
         
     def tile_event(self, tile_index, player_index):
         player = self.players[player_index]
@@ -90,3 +98,39 @@ class GameManager:
         else:
             # 다른 플레이어 소유 타일이면 통행료 지불
             return self.pay_toll(tile_index, player_index)
+        
+    def sell_properties_until_enough(self, player_index, amount_needed):
+        player = self.players[player_index]
+        log = []
+
+        while player.properties and player.money < amount_needed:
+            tile = player.properties.pop(0)  # 가장 먼저 산 땅부터
+            spent = tile.get_total_value()  # 구매 + 업그레이드 금액
+            refund = int(spent * 0.7) # 70% 환불
+
+            player.money += refund
+            tile.owner = None
+            tile.upgrade_level = 0
+
+            log.append(f"{player.color} 플레이어가 {tile.name}을 팔고 ₩{refund}를 받았습니다.")
+
+        return log
+
+    def check_and_handle_bankruptcy(self, player_index, amount_needed):
+        player = self.players[player_index]
+
+        # 1. 시도: 가진 돈으로는 부족 → 땅을 팔아서 마련
+        if player.money < amount_needed and player.properties:
+            log = self.sell_properties_until_enough(player_index, amount_needed)
+        else:
+            log = []
+
+        # 2. 다시 확인: 충분한 돈이 모였는지
+        if player.money >= amount_needed:
+            player.pay(amount_needed)
+            return False, log + [f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."]
+        else:
+            # 3. 여전히 부족하면 파산 처리
+            player.is_bankrupt = True
+            log.append(f"{player.color} 플레이어는 파산했습니다.")
+            return True, log
