@@ -9,8 +9,8 @@ class GameManager:
     def __init__(self):
         # 네 명의 플레이어 초기화
         self.players = [
-            Player(1, 'red'), Player(2, 'blue'),
-            Player(3, 'green'), Player(4, 'yellow')
+            Player(0, 'red'), Player(1, 'blue'),
+            Player(2, 'green'), Player(3, 'yellow')
         ]
         self.current_player_index = 0  # 현재 턴인 플레이어의 인덱스
         self.tiles = all_tiles()  # 전체 타일 생성 (tile_info에서 시각 타일 포함하여 생성)
