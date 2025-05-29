@@ -1,3 +1,4 @@
+
 # from board_set import board_start
 # import roll_dices.roller
 # import pygame
@@ -9,7 +10,6 @@
 #     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # 키를 누르고 이벤트 키가 스페이스이면
 #         roller.roll_dice()
 
-
 import pygame
 import pygame_gui
 import os
@@ -17,19 +17,18 @@ from board_set.BoardScreen import BoardScreen
 from roll_dices.roller import DiceRoller
 from game.tile_info import all_tiles  # 개선된 all_tiles 사용
 
+
 pygame.init()
 clock = pygame.time.Clock()
 background = pygame.display.set_mode((1500, 1000))
 background.fill((255, 255, 255))
 
-# GUI 설정
-manager = pygame_gui.UIManager((1500, 1000))
 
 # 보드 배경 그리기
 BoardScreen(background)
 
 
-# 타일 설정 (개선된 구조 사용)
+# 타일 설정
 tiles = all_tiles()
 
 # 주사위 객체 생성

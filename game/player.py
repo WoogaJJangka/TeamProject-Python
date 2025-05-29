@@ -1,4 +1,5 @@
 class Player: # 플레이어 클래스
+
     def __init__(self, turn, color_name, image_surface): # 플레이어 기본 설정
         self.color = color_name  # 플레이어 색깔 (red, blue, green, yellow)
         self.image = image_surface.convert_alpha() # 플레이어 이미지
@@ -8,7 +9,6 @@ class Player: # 플레이어 클래스
         self.properties = [] # 소유한 타일
         self.is_bankrupt = False # 파산 여부
 
-
     def move(self, steps, board_size = 20): # 이동 메서드
         self.position = (self.position + steps) % board_size # 현재 위치에서 주사위의 합을 더한 후 보드 사이즈로 나눈 나머지로 이동
 
@@ -17,5 +17,7 @@ class Player: # 플레이어 클래스
         if self.money >= 0: # 만약 현재 돈이 0 이상이면 True를 리턴
             return True
         elif self.money < 0:
+
             return False # 만약 현재 돈이 0보다 작으면 False를 리턴
         return None
+
