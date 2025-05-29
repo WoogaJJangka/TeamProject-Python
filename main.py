@@ -21,15 +21,17 @@ BoardScreen(background)
 # 타일 설정
 tiles = all_tiles()
 
+
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
-
 # 플레이어 객체 생성
 game_manager = gm.GameManager()
 
-running = True
-while running:
-    time_delta = clock.tick(60)
+running = True # 실행 상태
+
+while running: # 게임이 실행중인 동안
+    clock.tick(120)
+
     mouse_pos = pygame.mouse.get_pos()
 
     # 타일 하이라이트
@@ -105,7 +107,6 @@ while running:
                     selected_player_index = int(input("플레이어 인덱스를 입력하세요 (0-3): "))
                     destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
                     game_manager.teleport_player(selected_player_index, destination_tile_index)
-
 
     pygame.display.update()
 

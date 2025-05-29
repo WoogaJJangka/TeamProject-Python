@@ -1,4 +1,3 @@
-import random
 from game.tile_info import all_tiles  # 타일 정보와 시각 객체를 포함한 타일 리스트 생성 함수
 from game.player import Player  # 플레이어 클래스
 
@@ -38,21 +37,25 @@ class GameManager:
 
     def buy_tile(self, tile_index, player_index):
         ''' 타일 구매 시도 함수 '''
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
+        player = self.players[player_index]
+        
         if player.pay(tile.price):  # 플레이어가 돈을 낼 수 있으면
             tile.owner = player
             player.properties.append(tile)
             return True, f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
+        
         else:
             return False, f"{player.color} 플레이어는 {tile.name}을(를) 구매할 돈이 부족합니다."
 
     def upgrade_tile(self, tile_index, player_index):
         ''' 소유한 타일 업그레이드 시도 '''
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
+        player = self.players[player_index]
+        
         if tile.owner != player:
             return False, f"{tile.name}은(는) {player.color} 플레이어의 소유가 아닙니다."
+        
         if tile.upgrade_level >= 2:
             return False, f"{tile.name}은(는) 이미 최대 업그레이드 상태입니다."
 
@@ -66,9 +69,9 @@ class GameManager:
 
     def pay_toll(self, tile_index, player_index):
         ''' 타일 통행료 지불 처리 '''
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
-
+        player = self.players[player_index]
+        
         # 무주택지 또는 자기 땅이면 통행료 없음
         if tile.owner is None or tile.owner == player:
             return False, "통행료를 지불할 필요가 없습니다."
@@ -77,18 +80,20 @@ class GameManager:
         if player.pay(toll):
             tile.owner.money += toll
             return True, f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."
+        
         else:
-            # 돈이 부족하면 파산 처리 또는 부동산 매각 시도
-            is_bankrupt, log = self.check_and_handle_bankruptcy(player_index, toll)
-            if is_bankrupt:
-                return False, log
+            is_bankrupt, log = self.check_and_handle_bankruptcy(player_index, toll) # 통행료를 지불 할 수 있는지 확인
+            if is_bankrupt: # 파산 상태라면
+                return False, log # False와 로그를 반환
             else:
                 return True, log + [f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."]
-
-    def tile_event(self, tile_index, player_index):
+        
+    def tile_event(self, tile_index, player_index): # 일반 타일을 받았을 때 실행되는 메서드
         ''' 타일에 도착했을 때 발생하는 이벤트 처리 '''
-        player = self.players[player_index]
         tile = self.tiles[tile_index]
+        player = self.players[player_index]
+        
+        # 타일 소유 여부 확인
         if tile.owner is None:
             return self.buy_tile(tile_index, player_index)
         elif tile.owner == player:
@@ -102,12 +107,13 @@ class GameManager:
         log = []
 
         while player.properties and player.money < amount_needed:
-            tile = player.properties.pop(0)
-            spent = tile.get_total_value()
-            refund = int(spent * 0.7)  # 원가의 70% 반환
+            tile = player.properties.pop(0)  # 가장 먼저 산 땅부터
+            spent = tile.get_total_value()  # 구매 + 업그레이드 금액
+            refund = int(spent * 0.7) # 70% 환불
             player.money += refund
             tile.owner = None
             tile.upgrade_level = 0
+
             log.append(f"{player.color} 플레이어가 {tile.name}을 팔고 ₩{refund}를 받았습니다.")
 
         return log
@@ -118,18 +124,18 @@ class GameManager:
         반환값: (is_bankrupt: bool, log: str 또는 [str])
         '''
         player = self.players[player_index]
-        # 부동산 매각 시도
+        # 1. 시도: 가진 돈으로는 부족 → 땅을 팔아서 마련
         if player.money < amount_needed and player.properties:
             log = self.sell_properties_until_enough(player_index, amount_needed)
         else:
             log = []
 
-        # 매각 후 납부 가능하면 납부
+        # 2. 다시 확인: 충분한 돈이 모였는지
         if player.money >= amount_needed:
             player.pay(amount_needed)
             return False, log + [f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."]
         else:
-            # 여전히 돈이 부족하면 파산
+            # 3. 여전히 돈이 부족하면 파산
             player.is_bankrupt = True
             log.append(f"{player.color} 플레이어는 파산했습니다.")
             return True, log
