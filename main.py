@@ -16,6 +16,8 @@ import os
 from board_set.BoardScreen import BoardScreen
 from roll_dices.roller import DiceRoller
 from game.tile_info import all_tiles  # 개선된 all_tiles 사용
+import game.game_manager as gm
+import game.player as player
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -35,6 +37,9 @@ tiles = all_tiles()
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
 
+# 플레이어 객체 생성
+game_manager = gm.GameManager()
+
 running = True
 while running:
     time_delta = clock.tick(60)
@@ -52,7 +57,12 @@ while running:
             running = False
 
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # 스페이스 바 클릭 인식
-            move = roller.roll_dice() # 주사위 굴리기(roll_dices.roller.py 참고)
+            steps = roller.roll_dice() # 주사위 굴리기(roll_dices.roller.py 참고)
+            current_player = game_manager.get_current_player()
+            current_player.move(steps)
+            print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+            print(f"현재 위치: {current_player.position}")
+            game_manager.turn_over()  # 턴 넘기기
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for idx, tile in enumerate(tiles): # 0부터 19까지 타일 반복(인덱스 번호, 타일)
