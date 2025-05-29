@@ -56,7 +56,13 @@ while running:
                     print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
                     # 타일 이벤트 처리
-                    if current_player.position == 5:
+                    if current_player.position == 0:
+                        print(f"{current_player.color} 플레이어가 출도 타일에 도착했습니다.")
+                        success, message = game_manager.turn_over()  # 턴 넘기기 및 승리 조건 확인
+                        if message:
+                            print(message)
+                            
+                    elif current_player.position == 5:
                         print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
                         teleport_done = False  # 순간이동 완료 여부
                         while not teleport_done:
@@ -80,11 +86,28 @@ while running:
                                     break
                         success, message = game_manager.tile_event(current_player.position, current_player.turn)
                         print(message)
-                        game_manager.turn_over()  # 턴 넘기기
+                        success, message = game_manager.turn_over()  # 턴 넘기기 및 승리 조건 확인
+                        if message:
+                            print(message)
+                            
+                    elif current_player.position == 10:
+                        print(f"{current_player.color} 플레이어가 미정 타일에 도착했습니다.")
+                        success, message = game_manager.turn_over()  # 턴 넘기기 및 승리 조건 확인
+                        if message:
+                            print(message)
+                            
+                    elif current_player.position == 15:
+                        print(f"{current_player.color} 플레이어가 무주도 타일에 도착했습니다.")
+                        success, message = game_manager.turn_over()  # 턴 넘기기 및 승리 조건 확인
+                        if message:
+                            print(message)
+                    
                     else:
                         success, message = game_manager.tile_event(current_player.position, current_player.turn)
                         print(message)
-                        game_manager.turn_over()  # 턴 넘기기
+                        success, message = game_manager.turn_over()  # 턴 넘기기 및 승리 조건 확인
+                        if message:
+                            print(message)
 
             # F1 + p (커맨드)
             elif event.key == pygame.K_p:

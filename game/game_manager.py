@@ -33,6 +33,7 @@ class GameManager:
 
     def turn_over(self):
         ''' 다음 플레이어로 턴 넘기기 '''
+        self.check_victory()  # 턴 넘기기 전에 승리 조건 확인
         self.current_player_index = (self.current_player_index + 1) % 4
         return self.current_player_index
 
@@ -141,3 +142,22 @@ class GameManager:
         player.position = destination_index
 
         return True, f"{player.color} 플레이어가 {destination_index}번 타일로 순간이동했습니다."
+    
+    def check_victory(self):
+        ''' 게임 승리 조건 확인 '''
+        alive_players = [p for p in self.players if not p.is_bankrupt] # 살아있는 플레이어들
+
+        # 조건 1: 3명 파산
+        if len(alive_players) == 1:
+            winner = alive_players[0]
+            return True, f"{winner.color} 플레이어가 마지막 생존자로 승리했습니다!"
+
+        # 조건 2: 땅 개수 차이
+        sorted_players = sorted(alive_players, key=lambda p: len(p.properties), reverse=True)
+        if len(sorted_players) >= 2:
+            diff = len(sorted_players[0].properties) - len(sorted_players[1].properties)
+            if diff >= 5:
+                winner = sorted_players[0]
+                return True, f"{winner.color} 플레이어가 땅 개수 차이로 승리했습니다! (차이: {diff}개)"
+
+        return False, None
