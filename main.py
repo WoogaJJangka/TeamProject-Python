@@ -1,24 +1,26 @@
 import pygame
+import pygame_gui
 import os
 from board_set.BoardScreen import BoardScreen
-from board_set import TileDeco
-import game.game_manager as gm
 from roll_dices.roller import DiceRoller
+from game.tile_info import all_tiles  # 개선된 all_tiles 사용
+import game.game_manager as gm
+import game.player as player
+
 
 pygame.init()
 clock = pygame.time.Clock()
 background = pygame.display.set_mode((1500, 1000))
 background.fill((255, 255, 255))
 
+
 # 보드 배경 그리기
 BoardScreen(background)
 
-# 타일 설정 (board_set/TileDeco.py 참고)
-all_local = TileDeco.all_local()
 
-# 타일 글씨 그리기
-for name in all_local:
-    TileDeco.TileDeco.tile_word(name, background)
+# 타일 설정
+tiles = all_tiles()
+
 
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
@@ -28,13 +30,21 @@ game_manager = gm.GameManager()
 running = True # 실행 상태
 
 while running: # 게임이 실행중인 동안
-    clock.tick(60)
+    clock.tick(120)
+
     mouse_pos = pygame.mouse.get_pos()
 
+    # 타일 하이라이트
+    for tile in tiles: # 타일 정보 전부 반복
+        tile.draw(background, mouse_pos)
+        if tile.visual.rect.collidepoint(mouse_pos):  # highlight 기준
+            tile.draw_info(background, pos=(50, 50))
+            break  # 하나만 표시하면 되므로 break
+
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT: # 게임 X 종료
             running = False
-        
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 if game_manager.get_current_player().is_bankrupt:
@@ -50,11 +60,31 @@ while running: # 게임이 실행중인 동안
                     # 타일 이벤트 처리
                     if current_player.position == 5:
                         print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
-                        succes, message = game_manager.teleport_player(current_player.turn, 0)
+                        teleport_done = False  # 순간이동 완료 여부
+                        while not teleport_done:
+                            for event in pygame.event.get():
+                                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                                    mouse_pos = pygame.mouse.get_pos()  # 클릭 시점의 마우스 위치
+                                    for idx, tile in enumerate(tiles):
+                                        if tile.is_clicked(mouse_pos):
+                                            # 학으로 이동 방지
+                                            if idx == 5:
+                                                print("학 타일로는 순간이동할 수 없습니다.")
+                                            else:
+                                                print(f"{idx}번 타일로 순간이동 시도")
+                                                success, message = game_manager.teleport_player(current_player.turn, idx)
+                                                print(message)
+                                                teleport_done = True  # 순간이동 완료
+                                                break
+                                elif event.type == pygame.QUIT:
+                                    running = False 
+                                    teleport_done = True
+                                    break
+                        success, message = game_manager.tile_event(current_player.position, current_player.turn)
                         print(message)
                         game_manager.turn_over()  # 턴 넘기기
                     else:
-                        succes, message = game_manager.tile_event(current_player.position, current_player.turn)
+                        success, message = game_manager.tile_event(current_player.position, current_player.turn)
                         print(message)
                         game_manager.turn_over()  # 턴 넘기기
 
@@ -78,17 +108,6 @@ while running: # 게임이 실행중인 동안
                     destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
                     game_manager.teleport_player(selected_player_index, destination_tile_index)
 
-
-
-    # 마우스가 타일 위에 있으면 색상 변경
-    for m_p in all_local:
-        rect = pygame.Rect(m_p.mouse_position)
-        if rect.collidepoint(mouse_pos):
-            m_p.tile_cog_color(background)
-        else:
-            m_p.tile_word(background)
-            
     pygame.display.update()
 
 pygame.quit()
-# 게임 종료

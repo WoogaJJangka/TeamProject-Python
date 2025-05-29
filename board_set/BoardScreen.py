@@ -36,30 +36,16 @@ def BoardScreen(background): # 보드판 배경 그리기
 
     # 한반도 사진 넣기
 
-    img_한반도 = pygame.image.load("board_set\\한반도.png") # 한반도 사진 불러오기
-    img_한반도 = pygame.transform.scale(img_한반도,(200,400)) # 사진 크기 조정
-    background.blit(img_한반도,(650,300)) # 사진 위치 조정
+    img_han = pygame.image.load("board_set/한반도.png") # 한반도 사진 불러오기
+    img_han = pygame.transform.scale(img_han,(200,400)) # 사진 크기 조정
+    background.blit(img_han,(650,300)) # 사진 위치 조정
 
     # 게임 판에 중앙 글씨 넣기(조선 유람)
     font = pygame.font.Font("board_set/font.ttf", 60)  # 폰트, 크기 조정
-    text_조선 = font.render("조선", True, (0, 0, 0))  # 조선 색깔
-    text_유람 = font.render("유람", True, (0, 0, 0))  # 유람 색깔
 
-    background.blit(text_조선, (695, 440))  # 조선 글자 위치 조정
-    background.blit(text_유람, (695, 505))  # 유람 글자 위치 조정
+    rendered1 = font.render("조선", True, (0, 0, 0))  # 조선 색깔
+    rendered2 = font.render("유람", True, (0, 0, 0))  # 유람 색깔
 
+    background.blit(rendered1, (695, 440))  # 조선 글자 위치 조정
+    background.blit(rendered2, (695, 505))  # 유람 글자 위치 조정
 
-if __name__ == "__main__": # 따로 확인하기 위한 코드
-
-    BoardScreen()
-
-    done = False
-    while not done:
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-        pygame.display.update()
-
-
-    pygame.quit()
