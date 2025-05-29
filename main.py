@@ -1,15 +1,3 @@
-
-# from board_set import board_start
-# import roll_dices.roller
-# import pygame
-#
-# board_start.set_board()
-# roller = roll_dices.roller.DiceRoller(board_start.background,"roll_dices\\assets")
-#
-# for event in pygame.event.get():
-#     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # 키를 누르고 이벤트 키가 스페이스이면
-#         roller.roll_dice()
-
 import pygame
 import pygame_gui
 import os
@@ -24,7 +12,6 @@ pygame.init()
 clock = pygame.time.Clock()
 background = pygame.display.set_mode((1500, 1000))
 background.fill((255, 255, 255))
-
 
 # 보드 배경 그리기
 BoardScreen(background)
@@ -61,22 +48,20 @@ while running:
                     print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 else:
-                    steps = roller.roll_dice() # 주사위 굴리기 이동 할 칸 받기
-                    current_player = game_manager.get_current_player() # 현재 플레이어 객체 받기
-                    current_player.move(steps) # 플레이어 이동
-                    # 이동 로그 출력
+                    # 원하는 위치로 주사위 객체 그룹을 그립니다
+                    dice_group_pos = (50, 755)  # 주사위 원하는 위치로 수정
+                    steps = roller.roll_dice(group_pos=dice_group_pos)
+                    current_player = game_manager.get_current_player()
+                    current_player.move(steps)
                     print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    # 타일 이벤트 처리
                     if current_player.position == 5:
                         print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
                         succes, message = game_manager.teleport_player(current_player.turn, 0)
-                        print(message)
-                        game_manager.turn_over()  # 턴 넘기기
                     else:
                         succes, message = game_manager.tile_event(current_player.position, current_player.turn)
-                        print(message)
-                        game_manager.turn_over()  # 턴 넘기기
+                    print(message)
+                    game_manager.turn_over()
 
             # F1 + p (커맨드)
             elif event.key == pygame.K_p:
