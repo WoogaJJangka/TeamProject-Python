@@ -1,19 +1,8 @@
-# from board_set import board_start
-# import roll_dices.roller
-# import pygame
-#
-# board_start.set_board()
-# roller = roll_dices.roller.DiceRoller(board_start.background,"roll_dices\\assets")
-#
-# for event in pygame.event.get():
-#     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # 키를 누르고 이벤트 키가 스페이스이면
-#         roller.roll_dice()
-
-
 import pygame
 import pygame_gui
 import os
 from board_set.BoardScreen import BoardScreen
+from game import game_manager as gm
 from board_set import tiledeco
 from roll_dices.roller import DiceRoller
 from game_gui import button, Lavel
@@ -40,6 +29,9 @@ for name in all_local:
 # 주사위 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
 
+# 플레이어 객체 생성
+game_manager = gm.GameManager()
+
 #YES 아니면 NO 버튼 생성
 ybutton = button.Ybutton(manager)
 nbutton = button.Nbutton(manager)
@@ -48,6 +40,8 @@ nbutton.hide()
 
 
 running = True
+
+
 while running:
     time_delta  = clock.tick(60)
     mouse_pos = pygame.mouse.get_pos()
@@ -59,9 +53,33 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # 스페이스바 누르면 주사위 굴리기
-            move = roller.roll_dice()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if game_manager.get_current_player().is_bankrupt:
+                    print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
+                    game_manager.turn_over()
+                else:
+                    steps = roller.roll_dice()
+                    current_player = game_manager.get_current_player()
+                    current_player.move(steps)
+                    print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+                    print(f"현재 위치: {current_player.position}")
+                    succes, message = game_manager.tile_event(current_player.position, current_player.turn)
+                    print(message)
+                    game_manager.turn_over()  # 턴 넘기기
+
+            # F1 + p (커맨드)
+            elif event.key == pygame.K_p:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
+                
+            # F1 + m (커맨드)
+            elif event.key == pygame.K_m:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
+
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # 좌클릭
             clicked_tile_index = tiledeco.get_clicked_tile_index(mouse_pos, all_local)
