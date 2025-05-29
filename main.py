@@ -17,7 +17,7 @@ from board_set.BoardScreen import BoardScreen
 from roll_dices.roller import DiceRoller
 from game.tile_info import all_tiles  # 개선된 all_tiles 사용
 import game.game_manager as gm
-import game.player as player
+import game.player as Player
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -46,11 +46,22 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
 
     # 타일 하이라이트
-    for tile in tiles: # 타일 정보 전부 반복
-        tile.draw(background, mouse_pos)
-        if tile.visual.rect.collidepoint(mouse_pos):  # highlight 기준
-            tile.draw_info(background, pos=(50, 50))
-            break  # 하나만 표시하면 되므로 break
+    highlight_tile = None
+    for tile in tiles:
+        if tile.visual.rect.collidepoint(mouse_pos):
+            highlight_tile = tile
+            break
+    for tile in tiles:
+        if tile is highlight_tile:
+            tile.visual.draw(background, tile.name, highlight=True)
+        else:
+            tile.visual.draw(background, tile.name, highlight=False)
+    if highlight_tile:
+        highlight_tile.draw_info(background, pos=(50, 50))
+
+    # 플레이어 정보 패널 그리기 (오른쪽에 순서대로)
+    for idx, p in enumerate(game_manager.players):
+        p.draw_info(background, pos=(1200, 50 + idx * 160))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # 게임 X 종료
