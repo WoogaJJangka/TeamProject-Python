@@ -42,8 +42,10 @@ def BoardScreen(background): # 보드판 배경 그리기
 
     # 게임 판에 중앙 글씨 넣기(조선 유람)
     font = pygame.font.Font("board_set/font.ttf", 60)  # 폰트, 크기 조정
+
     rendered1 = font.render("조선", True, (0, 0, 0))  # 조선 색깔
     rendered2 = font.render("유람", True, (0, 0, 0))  # 유람 색깔
 
     background.blit(rendered1, (695, 440))  # 조선 글자 위치 조정
     background.blit(rendered2, (695, 505))  # 유람 글자 위치 조정
+
