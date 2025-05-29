@@ -7,7 +7,7 @@ from game.tile_info import all_tiles  # 개선된 all_tiles 사용
 import game.game_manager as gm
 import game.player as player
 
-
+# pygame 초기화 및 화면 설정
 pygame.init()
 clock = pygame.time.Clock()
 background = pygame.display.set_mode((1500, 1000))
@@ -16,66 +16,67 @@ background.fill((255, 255, 255))
 # 보드 배경 그리기
 BoardScreen(background)
 
-
-# 타일 설정
+# 타일 설정 (타일 리스트 생성)
 tiles = all_tiles()
 
-# 주사위 객체 생성
+# 주사위 객체 생성 (주사위 이미지 경로 지정)
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
 
-# 플레이어 객체 생성
+# 플레이어 객체 생성 및 게임 매니저 생성
 game_manager = gm.GameManager()
 
 running = True
 while running:
-    time_delta = clock.tick(60)
-    mouse_pos = pygame.mouse.get_pos()
+    time_delta = clock.tick(60)  # 프레임 제한 및 시간 계산
+    mouse_pos = pygame.mouse.get_pos()  # 현재 마우스 위치
 
-    # 타일 하이라이트
-    for tile in tiles: # 타일 정보 전부 반복
-        tile.draw(background, mouse_pos)
-        if tile.visual.rect.collidepoint(mouse_pos):  # highlight 기준
-            tile.draw_info(background, pos=(50, 50))
-            break  # 하나만 표시하면 되므로 break
+    # 타일 하이라이트 및 정보 표시
+    for tile in tiles:  # 모든 타일 반복
+        tile.draw(background, mouse_pos)  # 타일 그리기
+        if tile.visual.rect.collidepoint(mouse_pos):  # 마우스가 타일 위에 있으면
+            tile.draw_info(background, pos=(50, 50))  # 타일 정보 표시
+            break  # 하나만 표시
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: # 게임 X 종료
+        if event.type == pygame.QUIT:  # 창 닫기 이벤트
             running = False
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
+                # 현재 플레이어가 파산 상태면 턴 넘김
                 if game_manager.get_current_player().is_bankrupt:
                     print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 else:
-                    # 원하는 위치로 주사위 객체 그룹을 그립니다
-                    dice_group_pos = (50, 755)  # 주사위 원하는 위치로 수정
-                    steps = roller.roll_dice(group_pos=dice_group_pos)
+                    # 원하는 위치에 주사위 객체 그룹(배경+주사위) 그리기
+                    dice_group_pos = (50, 755)  # 주사위 객체 그룹의 좌상단 위치
+                    steps = roller.roll_dice(group_pos=dice_group_pos)  # 주사위 굴리기
                     current_player = game_manager.get_current_player()
-                    current_player.move(steps)
+                    current_player.move(steps)  # 플레이어 이동
                     print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
+                    # 특정 타일(예: 학 타일)에 도착하면 순간이동 처리
                     if current_player.position == 5:
                         print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
                         succes, message = game_manager.teleport_player(current_player.turn, 0)
                     else:
                         succes, message = game_manager.tile_event(current_player.position, current_player.turn)
                     print(message)
-                    game_manager.turn_over()
+                    game_manager.turn_over()  # 턴 넘김
 
-            # F1 + p (커맨드)
+            # F1 + p : 플레이어 위치 출력
             elif event.key == pygame.K_p:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_F1]:
                     print(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
                 
-            # F1 + m (커맨드)
+            # F1 + m : 플레이어 돈 출력
             elif event.key == pygame.K_m:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_F1]:
                     print(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
                     
-            # F1 + t (커맨드)
+            # F1 + t : 플레이어 순간이동
             elif event.key == pygame.K_t:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_F1]:
@@ -83,14 +84,13 @@ while running:
                     destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
                     game_manager.teleport_player(selected_player_index, destination_tile_index)
 
-
+        # 마우스 왼쪽 클릭 시 타일 인덱스 출력
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for idx, tile in enumerate(tiles): # 0부터 19까지 타일 반복(인덱스 번호, 타일)
-                if tile.is_clicked(mouse_pos): # 특정 타일과 마우스 포인터가 겹칠 경우 True
+            for idx, tile in enumerate(tiles):  # 모든 타일 반복
+                if tile.is_clicked(mouse_pos):  # 클릭된 타일 찾기
                     print(idx)
                     break
 
+    pygame.display.update()  # 화면 업데이트
 
-    pygame.display.update()
-
-pygame.quit()
+pygame.quit()  # pygame 종료
