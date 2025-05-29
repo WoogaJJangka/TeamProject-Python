@@ -119,7 +119,7 @@ class Tile:
             rendered = font.render(line, True, (0,0,0))
             background.blit(rendered, (pos[0], y))
             y += 35
-        pygame.draw.rect(background, (0,0,0), (40, 40, 250, 200), 3)
+        pygame.draw.rect(background, (0,0,0), (40, 40, 250, 160), 3)
 
 # 전체 타일 생성 함수
 def all_tiles():
