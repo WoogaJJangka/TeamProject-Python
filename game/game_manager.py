@@ -133,3 +133,11 @@ class GameManager:
             player.is_bankrupt = True
             log.append(f"{player.color} 플레이어는 파산했습니다.")
             return True, log
+        
+    def teleport_player(self, player_index, destination_index):
+        ''' 플레이어를 특정 타일로 순간이동 '''
+        player = self.players[player_index]
+        # 이동 처리
+        player.position = destination_index
+
+        return True, f"{player.color} 플레이어가 {destination_index}번 타일로 순간이동했습니다."

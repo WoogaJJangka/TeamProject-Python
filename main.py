@@ -55,13 +55,49 @@ while running:
         if event.type == pygame.QUIT: # 게임 X 종료
             running = False
 
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # 스페이스 바 클릭 인식
-            steps = roller.roll_dice() # 주사위 굴리기(roll_dices.roller.py 참고)
-            current_player = game_manager.get_current_player()
-            current_player.move(steps)
-            print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
-            print(f"현재 위치: {current_player.position}")
-            game_manager.turn_over()  # 턴 넘기기
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if game_manager.get_current_player().is_bankrupt:
+                    print(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
+                    game_manager.turn_over()
+                else:
+                    steps = roller.roll_dice() # 주사위 굴리기 이동 할 칸 받기
+                    current_player = game_manager.get_current_player() # 현재 플레이어 객체 받기
+                    current_player.move(steps) # 플레이어 이동
+                    # 이동 로그 출력
+                    print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+                    print(f"현재 위치: {current_player.position}")
+                    # 타일 이벤트 처리
+                    if current_player.position == 5:
+                        print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
+                        succes, message = game_manager.teleport_player(current_player.turn, 0)
+                        print(message)
+                        game_manager.turn_over()  # 턴 넘기기
+                    else:
+                        succes, message = game_manager.tile_event(current_player.position, current_player.turn)
+                        print(message)
+                        game_manager.turn_over()  # 턴 넘기기
+
+            # F1 + p (커맨드)
+            elif event.key == pygame.K_p:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
+                
+            # F1 + m (커맨드)
+            elif event.key == pygame.K_m:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    print(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
+                    
+            # F1 + t (커맨드)
+            elif event.key == pygame.K_t:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_F1]:
+                    selected_player_index = int(input("플레이어 인덱스를 입력하세요 (0-3): "))
+                    destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
+                    game_manager.teleport_player(selected_player_index, destination_tile_index)
+
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for idx, tile in enumerate(tiles): # 0부터 19까지 타일 반복(인덱스 번호, 타일)
