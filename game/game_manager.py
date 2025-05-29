@@ -1,16 +1,16 @@
-import random
+import random  # 랜덤 모듈 임포트
 from game.tile_info import all_tiles  # 타일 정보와 시각 객체를 포함한 타일 리스트 생성 함수
 from game.player import Player  # 플레이어 클래스
 
-
+# 게임의 상태를 관리하는 클래스
 class GameManager:
     ''' 게임의 상태를 관리하는 클래스 '''
 
     def __init__(self):
         # 네 명의 플레이어 초기화
         self.players = [
-            Player(1, 'red'), Player(2, 'blue'),
-            Player(3, 'green'), Player(4, 'yellow')
+            Player(0, 'red'), Player(1, 'blue'),
+            Player(2, 'green'), Player(3, 'yellow')
         ]
         self.current_player_index = 0  # 현재 턴인 플레이어의 인덱스
         self.tiles = all_tiles()  # 전체 타일 생성 (tile_info에서 시각 타일 포함하여 생성)
@@ -133,3 +133,11 @@ class GameManager:
             player.is_bankrupt = True
             log.append(f"{player.color} 플레이어는 파산했습니다.")
             return True, log
+
+    def teleport_player(self, player_index, destination_tile_index):
+        """
+        플레이어를 지정한 타일로 순간이동시키는 메서드
+        """
+        player = self.players[player_index]
+        player.position = destination_tile_index
+        return True, f"{player.color} 플레이어가 {destination_tile_index}번 타일로 순간이동했습니다."

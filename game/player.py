@@ -42,8 +42,8 @@ class Player:  # 플레이어 클래스 정의
             'yellow': (220, 220, 0)
         }
         player_color = color_map.get(self.color, (0,0,0))
-        # 첫 줄: nP : color (color만 색상)
-        np_text = f"{self.turn}P : "
+        # 첫 줄: P1, P2, ... : color (color만 색상)
+        np_text = f"P{self.turn+1} : "
         color_text = self.color
         np_rendered = font.render(np_text, True, (0,0,0))
         color_rendered = font.render(color_text, True, player_color)
@@ -54,7 +54,7 @@ class Player:  # 플레이어 클래스 정의
         # 나머지 정보
         lines = [
             f"소지금: {self.money} 원",
-            "보유 타일: " + (", ".join([tile.name if hasattr(tile, "name") else str(tile) for tile in self.properties]) if self.properties else "없음")
+            f"보유 건물: {len(self.properties)}개"
         ]
         for line in lines:
             rendered = font.render(line, True, (0,0,0))
