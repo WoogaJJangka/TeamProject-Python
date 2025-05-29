@@ -1,10 +1,12 @@
 import random
+
 from game.tile_info import Tile # 타일 클레스를 불러옴
 from game.player import Player # 플레이어 클래스를 불러옴
 
 # 게임 매니저 클래스
 class GameManager:
     ''' 게임의 상태를 관리하는 클래스 '''
+
     def __init__(self): # 플레이어 와 타일을 셋팅
         self.players = [
             Player(1, 'red'), Player(2, 'blue'),
@@ -22,6 +24,7 @@ class GameManager:
 
     def get_current_player_color(self): # 현제 플레이어 색깔 반환
         return self.players[self.current_player_index].color
+
 
     def get_current_player(self): # 현제 플레이어 객체 반환
         return self.players[self.current_player_index]
@@ -135,3 +138,4 @@ class GameManager:
             player.is_bankrupt = True
             log.append(f"{player.color} 플레이어는 파산했습니다.")
             return True, log
+

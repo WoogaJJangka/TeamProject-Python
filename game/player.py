@@ -1,6 +1,8 @@
 class Player: # 플레이어 클래스
-    def __init__(self, turn, color): # 플레이어 기본 설정
-        self.color = color  # 플레이어 색깔 (red, blue, green, yellow)
+
+    def __init__(self, turn, color_name, image_surface): # 플레이어 기본 설정
+        self.color = color_name  # 플레이어 색깔 (red, blue, green, yellow)
+        self.image = image_surface.convert_alpha() # 플레이어 이미지
         self.turn = turn # 플레이어 턴
         self.money = 5000 # 시작 돈
         self.position = 0 # 시작 위치
@@ -15,4 +17,7 @@ class Player: # 플레이어 클래스
         if self.money >= 0: # 만약 현재 돈이 0 이상이면 True를 리턴
             return True
         elif self.money < 0:
+
             return False # 만약 현재 돈이 0보다 작으면 False를 리턴
+        return None
+
