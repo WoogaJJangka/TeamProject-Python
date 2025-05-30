@@ -96,7 +96,7 @@ while running:
                     current_player.move(steps)
                     print(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    player_index = current_player.turn - 1
+                    player_index = current_player.turn
                     if current_player.position == 15:
                         if not handle_teleport(current_player, player_index):
                             running = False
@@ -119,11 +119,6 @@ while running:
                 selected_player_index = int(input("플레이어 인덱스를 입력하세요 (0-3): "))
                 destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
                 game_manager.teleport_player(selected_player_index, destination_tile_index)
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for idx, tile in enumerate(tiles):
-                if tile.is_clicked(mouse_pos):
-                    print(idx)
-                    break
 
     pygame.display.update()
 
