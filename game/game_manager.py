@@ -95,8 +95,6 @@ class GameManager:
             player.pay(toll)  # 통행료 지불
             tile.owner.money += toll  # 소유주에게 돈 지급
             log.append(f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다.")
-            for msg in log:
-                print(msg)
             return True, log
         else:
             paid = max(0, player.money)  # 남은 돈 모두 지급
@@ -198,5 +196,4 @@ class GameManager:
         player = self.players[player_index]  # 현재 플레이어 객체
         player.position = destination_tile_index  # 위치 이동
         msg = f"{player.color} 플레이어가 {destination_tile_index}번 타일로 순간이동했습니다."
-        print(msg)
         return True, msg
