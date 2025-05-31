@@ -7,7 +7,7 @@ class GameManager:
     ''' 게임의 상태를 관리하는 클래스 '''
 
     def __init__(self):
-        # 네 명의 플레이어 초기화
+        # 네 명의 플레이어 초기화 (항상 인덱스 0~3, 색상 순서 고정)
         self.players = [
             Player(0, 'red'), Player(1, 'blue'),
             Player(2, 'green'), Player(3, 'yellow')
@@ -28,11 +28,11 @@ class GameManager:
         return self.players[self.current_player_index].color
 
     def get_current_player(self):
-        ''' 현재 플레이어 객체 반환 '''
+        # 항상 current_player_index 기준으로 반환
         return self.players[self.current_player_index]
 
     def turn_over(self):
-        ''' 다음 플레이어로 턴 넘기기 '''
+        # 다음 플레이어로 턴 넘기기 (0→1→2→3→0)
         self.current_player_index = (self.current_player_index + 1) % 4
         return self.current_player_index
 

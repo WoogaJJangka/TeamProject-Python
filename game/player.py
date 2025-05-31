@@ -34,7 +34,7 @@ class Player:  # 플레이어 클래스 정의
         pygame.draw.rect(background, (0,0,0), (pos[0], pos[1], box_width, box_height), 2, border_radius=10)
 
         font = pygame.font.Font(FONT_PATH, 28)
-        # 플레이어 색상 매핑
+        # 이름 색상만 진하게(원래 색상)
         color_map = {
             'red': (255, 0, 0),
             'blue': (0, 0, 255),
@@ -42,7 +42,7 @@ class Player:  # 플레이어 클래스 정의
             'yellow': (220, 220, 0)
         }
         player_color = color_map.get(self.color, (0,0,0))
-        # 첫 줄: P1, P2, ... : color (color만 색상)
+        # 첫 줄: P1, P2, ... : color (color만 진한 색)
         np_text = f"P{self.turn+1} : "
         color_text = self.color
         np_rendered = font.render(np_text, True, (0,0,0))
