@@ -10,6 +10,7 @@ class Player:  # 플레이어 클래스 정의
         self.position = 0              # 현재 위치 (타일 인덱스, 시작은 0)
         self.properties = []           # 소유한 타일 목록 (빈 리스트로 시작)
         self.is_bankrupt = False       # 파산 여부 (초기에는 파산하지 않음)
+        self.stop_turns = 0            # 무주도 등 이동불가 턴 수 (쉬운 단어)
 
     def move(self, steps, board_size=20):
         # 플레이어 이동 메서드: 현재 위치에서 주어진 칸 수만큼 이동
