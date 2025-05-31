@@ -41,20 +41,20 @@ for p in game_manager.players:
 
 def handle_teleport(current_player, player_index):
     # print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
-    teleport_done = False
+    teleport_done = False # 순간이동 완료 여부
     while not teleport_done:
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouse_pos = pygame.mouse.get_pos()
-                for idx, tile in enumerate(tiles):
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # 마우스 왼쪽 클릭
+                mouse_pos = pygame.mouse.get_pos() # 마우스 클릭 위치
+                for idx, tile in enumerate(tiles): # 타일 리스트 순회
                     if tile.is_clicked(mouse_pos):
                         if idx == 15:
-                            # print("학 타일로는 순간이동할 수 없습니다.")
+                            print("학 타일로는 순간이동할 수 없습니다.")
                             pass
                         else:
-                            # print(f"{idx}번 타일로 순간이동 시도")
+                            print(f"{idx}번 타일로 순간이동 시도")
                             success, message = game_manager.teleport_player(player_index, idx)
-                            # print(message)
+                            print(message)
                             teleport_done = True
                             break
             elif event.type == pygame.QUIT:
@@ -230,7 +230,8 @@ while running: # 게임이 실행중인 동안
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif ask_buy and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        
+        elif ask_buy and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # 타일 구매 이벤트 처리
             for idx, btn in enumerate(buy_buttons):
                 if btn.is_clicked(event.pos):
                     if idx == 0:  # 예
@@ -261,7 +262,8 @@ while running: # 게임이 실행중인 동안
                             add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
                         running = False
                     break
-        elif ask_upgrade and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                
+        elif ask_upgrade and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # 타일 업그레이드 이벤트 처리
             for idx, btn in enumerate(upgrade_buttons):
                 if btn.is_clicked(event.pos):
                     if idx == 0:  # 예
@@ -285,10 +287,13 @@ while running: # 게임이 실행중인 동안
                             add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
                         running = False
                     break
-        elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN:
+                
+        elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN: # 일반적인 이벤트 처리 (주사위 굴리기 및 특수 타일 이벤트)
             if event.key == pygame.K_SPACE:
                 current_player = game_manager.get_current_player()
-                if current_player.is_bankrupt:
+                player_index = game_manager.current_player_index
+                arrived_tile = tiles[current_player.position]
+                if current_player.is_bankrupt: # 파산 상태인 플레이어는 턴을 넘김
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 else:
@@ -296,20 +301,19 @@ while running: # 게임이 실행중인 동안
                     current_player.move(steps)
                     add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    player_index = game_manager.current_player_index
-                    arrived_tile = tiles[current_player.position]
+                    
                     special_tile_names = ["출도", "학", "무주도", "미정"]
                     add_console_message(f"{current_player.color} 플레이어가 {arrived_tile.name} 칸에 도착했습니다.")
-                    if current_player.position == 15:
+                    if current_player.position == 15: # 학 칸에 도착했을 때
                         add_console_message("학 칸에 도착했습니다! 원하는 타일을 클릭해 이동하세요.")
                         draw_console_messages(background)
                         pygame.display.update()
-                        if not handle_teleport(current_player, player_index):
+                        if not handle_teleport(current_player, player_index): # 텔레포트 실행
                             running = False
                             break
-                        arrived_tile = tiles[current_player.position]
                         special_tile_names = ["출도", "학", "무주도", "미정"]
                         if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
+                            # 주인이 없으면 구매 묻기
                             ask_buy = True
                             buy_tile_index = current_player.position
                             buy_player_index = player_index
@@ -319,6 +323,7 @@ while running: # 게임이 실행중인 동안
                                 Button((160, background.get_height()-80, 80, 40), "아니요", font_btn)
                             ]
                         elif arrived_tile.owner == current_player and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.upgrade_level < 2:
+                            # 주인이 자기 자신이고 업그레이드 가능하면 업그레이드 묻기
                             ask_upgrade = True
                             upgrade_tile_index = current_player.position
                             upgrade_player_index = player_index
@@ -328,6 +333,7 @@ while running: # 게임이 실행중인 동안
                                 Button((160, background.get_height()-140, 80, 40), "아니요", font_btn)
                             ]
                         else:
+                            # 일반 타일 이벤트 처리
                             success, message = game_manager.tile_event(current_player.position, player_index)
                             if message:
                                 add_console_message(message)
@@ -344,6 +350,7 @@ while running: # 게임이 실행중인 동안
                                 running = False
                     else:
                         if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
+                            # 주인이 없으면 구매 묻기
                             ask_buy = True
                             buy_tile_index = current_player.position
                             buy_player_index = player_index
@@ -353,6 +360,7 @@ while running: # 게임이 실행중인 동안
                                 Button((160, background.get_height()-80, 80, 40), "아니요", font_btn)
                             ]
                         elif arrived_tile.owner == current_player and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.upgrade_level < 2:
+                            # 주인이 자기 자신이고 업그레이드 가능하면 업그레이드 묻기
                             ask_upgrade = True
                             upgrade_tile_index = current_player.position
                             upgrade_player_index = player_index
@@ -362,6 +370,7 @@ while running: # 게임이 실행중인 동안
                                 Button((160, background.get_height()-140, 80, 40), "아니요", font_btn)
                             ]
                         else:
+                            # 일반 타일 이벤트 처리
                             success, message = game_manager.tile_event(current_player.position, player_index)
                             if message:
                                 add_console_message(message)
