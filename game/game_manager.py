@@ -193,8 +193,15 @@ class GameManager:
         # 파산하지 않은 플레이어가 1명 남으면 그 플레이어가 우승
         alive_players = [p for p in self.players if not p.is_bankrupt]
         if len(alive_players) == 1:
-            return alive_players[0]
-        return None
+            return alive_players[0], 'bankruptcy'
+        # 땅 개수 차이로 우승 조건 추가
+        property_counts = [(p, len(p.properties)) for p in self.players if not p.is_bankrupt] # 모든 플레이어 중 파산하지 않은 플레이어들 대상
+        if len(property_counts) >= 2:
+            property_counts.sort(key=lambda x: x[1], reverse=True)
+            first, second = property_counts[0][1], property_counts[1][1]
+            if first - second >= 5:
+                return property_counts[0][0], 'property'
+        return None, None
 
     def teleport_player(self, player_index, destination_tile_index):
         """
