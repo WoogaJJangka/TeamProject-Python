@@ -53,7 +53,6 @@ class GameManager:
         tile.owner = player  # 타일 소유자 지정
         player.properties.append(tile)  # 플레이어 소유 목록에 추가
         msg = f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
-        print(msg)
         return True, msg
 
     def upgrade_tile(self, tile_index, player_index):
