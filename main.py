@@ -22,7 +22,7 @@ tiles = game_manager.tiles  # 반드시 game_manager.tiles만 사용
 
 
 def handle_teleport(current_player, player_index):
-    print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
+    # print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
     teleport_done = False
     while not teleport_done:
         for event in pygame.event.get():
@@ -31,11 +31,12 @@ def handle_teleport(current_player, player_index):
                 for idx, tile in enumerate(tiles):
                     if tile.is_clicked(mouse_pos):
                         if idx == 15:
-                            print("학 타일로는 순간이동할 수 없습니다.")
+                            # print("학 타일로는 순간이동할 수 없습니다.")
+                            pass
                         else:
-                            print(f"{idx}번 타일로 순간이동 시도")
+                            # print(f"{idx}번 타일로 순간이동 시도")
                             success, message = game_manager.teleport_player(player_index, idx)
-                            print(message)
+                            # print(message)
                             teleport_done = True
                             break
             elif event.type == pygame.QUIT:
@@ -55,8 +56,8 @@ def handle_teleport(current_player, player_index):
         if highlight_tile:
             highlight_tile.draw_info(background, pos=(50, 50))
         for idx, p in enumerate(game_manager.players):
-            # 플레이어 인덱스와 색상 정보 표시 (디버깅용)
-            print(f"[DEBUG] idx={idx}, turn={p.turn}, color={p.color}, pos={p.position}, properties={[t.name for t in p.properties]}")
+            # 디버그 print 제거
+            # print(f"[DEBUG] idx={idx}, turn={p.turn}, color={p.color}, pos={p.position}, properties={[t.name for t in p.properties]}")
             p.draw_info(background, pos=(1200, 50 + idx * 160))
         pygame.display.update()
     return True
@@ -70,6 +71,7 @@ MAX_CONSOLE_LINES = 8
 # 콘솔 메시지 추가 함수: 새 메시지를 맨 위에 추가, 4줄 초과 시 마지막 삭제
 def add_console_message(msg):
     console_messages.insert(0, str(msg))
+    print(str(msg))  # pygame 왼쪽 메시지를 console에도 출력
     if len(console_messages) > MAX_CONSOLE_LINES:
         console_messages.pop()
 

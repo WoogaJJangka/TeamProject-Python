@@ -18,7 +18,7 @@ class GameManager:
 
     def roll_dice(self):
         ''' 주사위를 굴리는 함수. 더블이 나오면 다시 굴림 '''
-        d1, d2 = random.randint(1, 6), random.randint(1, 6)
+        d1, d2 = random.randint(1, 6), random.randint(1, 6)  # 두 개의 주사위 굴림
         if d1 == d2:
             return d1 + d2 + self.roll_dice()  # 더블이면 재굴림
         return d1 + d2
@@ -38,90 +38,116 @@ class GameManager:
 
     def buy_tile(self, tile_index, player_index):
         ''' 타일 구매 시도 함수 '''
-        special_tile_names = ["출도", "학", "무주도", "미정"]
-        tile = self.tiles[tile_index]
+        special_tile_names = ["출도", "학", "무주도", "미정"]  # 특수 타일 이름 목록
+        tile = self.tiles[tile_index]  # 현재 타일 객체
         if tile.name in special_tile_names:
-            return False, f"{tile.name} 칸은 구매할 수 없습니다."
-        player = self.players[player_index]
+            msg = f"{tile.name} 칸은 구매할 수 없습니다."
+            print(msg)
+            return False, msg  # 특수 타일은 구매 불가
+        player = self.players[player_index]  # 현재 플레이어 객체
         # 돈이 부족하면 구매 불가, 돈 차감도 하지 않음
         if player.money < tile.price:
-            return False, f"{player.color} 플레이어는 {tile.name}을(를) 구매할 돈이 부족합니다."
-        player.pay(tile.price)
-        tile.owner = player
-        player.properties.append(tile)
-        return True, f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
+            msg = f"{player.color} 플레이어는 {tile.name}을(를) 구매할 돈이 부족합니다."
+            print(msg)
+            return False, msg
+        player.pay(tile.price)  # 타일 가격만큼 돈 차감
+        tile.owner = player  # 타일 소유자 지정
+        player.properties.append(tile)  # 플레이어 소유 목록에 추가
+        msg = f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
+        print(msg)
+        return True, msg
 
     def upgrade_tile(self, tile_index, player_index):
         ''' 소유한 타일 업그레이드 시도 '''
-        player = self.players[player_index]
-        tile = self.tiles[tile_index]
+        player = self.players[player_index]  # 현재 플레이어 객체
+        tile = self.tiles[tile_index]  # 현재 타일 객체
         if tile.owner != player:
-            return False, f"{tile.name}은(는) {player.color} 플레이어의 소유가 아닙니다."
+            msg = f"{tile.name}은(는) {player.color} 플레이어의 소유가 아닙니다."
+            print(msg)
+            return False, msg  # 본인 소유가 아니면 업그레이드 불가
         if tile.upgrade_level >= 2:
-            return False, f"{tile.name}은(는) 이미 최대 업그레이드 상태입니다."
+            msg = f"{tile.name}은(는) 이미 최대 업그레이드 상태입니다."
+            print(msg)
+            return False, msg  # 이미 최대 업그레이드
 
         # 업그레이드 비용: LV0 -> 500, LV1 -> 1000
         cost = 500 if tile.upgrade_level == 0 else 1000
         if player.pay(cost):
-            tile.upgrade()
-            return True, f"{tile.name}을 업그레이드 했습니다! (현재 LV{tile.upgrade_level})"
+            tile.upgrade()  # 타일 업그레이드
+            msg = f"{tile.name}을 업그레이드 했습니다! (현재 LV{tile.upgrade_level})"
+            print(msg)
+            return True, msg
         else:
-            return False, f"{player.color} 플레이어는 업그레이드 비용 ₩{cost}가 부족합니다."
+            msg = f"{player.color} 플레이어는 업그레이드 비용 ₩{cost}가 부족합니다."
+            print(msg)
+            return False, msg
 
     def pay_toll(self, tile_index, player_index):
         ''' 타일 통행료 지불 처리 '''
-        player = self.players[player_index]
-        tile = self.tiles[tile_index]
+        player = self.players[player_index]  # 현재 플레이어 객체
+        tile = self.tiles[tile_index]  # 현재 타일 객체
 
         # 무주택지 또는 자기 땅이면 통행료 없음
         if tile.owner is None or tile.owner == player:
-            return False, "통행료를 지불할 필요가 없습니다."
+            msg = "통행료를 지불할 필요가 없습니다."
+            print(msg)
+            return False, msg
 
-        toll = tile.toll
+        toll = tile.toll  # 통행료 금액
         # 1. 돈이 부족하면 건물 매각 시도
         if player.money < toll and player.properties:
-            log = self.sell_properties_until_enough(player_index, toll)
+            log = self.sell_properties_until_enough(player_index, toll)  # 부동산 매각
         else:
             log = []
         # 2. 매각 후에도 돈이 부족하면 가진 돈 전부를 소유주에게 주고 파산
         if player.money >= toll:
-            player.pay(toll)
-            tile.owner.money += toll
+            player.pay(toll)  # 통행료 지불
+            tile.owner.money += toll  # 소유주에게 돈 지급
             log.append(f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다.")
+            for msg in log:
+                print(msg)
             return True, log
         else:
-            paid = max(0, player.money)
+            paid = max(0, player.money)  # 남은 돈 모두 지급
             tile.owner.money += paid
             player.money -= paid
-            player.is_bankrupt = True
+            player.is_bankrupt = True  # 파산 처리
             log.append(f"{player.color} 플레이어가 가진 돈 {paid}원을 모두 {tile.owner.color} 플레이어에게 주고 파산했습니다.")
+            for msg in log:
+                print(msg)
             return False, log
 
     def tile_event(self, tile_index, player_index):
         ''' 타일에 도착했을 때 발생하는 이벤트 처리 '''
-        player = self.players[player_index]
-        tile = self.tiles[tile_index]
+        player = self.players[player_index]  # 현재 플레이어 객체
+        tile = self.tiles[tile_index]  # 현재 타일 객체
         if tile.owner is None:
-            return self.buy_tile(tile_index, player_index)
+            result, msg = self.buy_tile(tile_index, player_index)  # 빈 땅이면 구매 시도
+            # buy_tile에서 이미 print 처리
+            return result, msg
         elif tile.owner == player:
             # 업그레이드 질문은 main.py에서 버튼으로 처리
             return False, ""
         else:
-            return self.pay_toll(tile_index, player_index)
+            result, log = self.pay_toll(tile_index, player_index)  # 타인 소유 땅이면 통행료
+            # pay_toll에서 이미 print 처리
+            return result, log
 
     def sell_properties_until_enough(self, player_index, amount_needed):
         ''' 목표 금액을 확보할 때까지 플레이어의 부동산을 매각 '''
-        player = self.players[player_index]
-        log = []
+        player = self.players[player_index]  # 현재 플레이어 객체
+        log = []  # 매각 로그 리스트
 
         while player.properties and player.money < amount_needed:
-            tile = player.properties.pop(0)
-            spent = tile.get_total_value()
+            tile = player.properties.pop(0)  # 가장 먼저 산 부동산부터 매각
+            spent = tile.get_total_value()  # 투자한 총 금액
             refund = int(spent * 0.7)  # 원가의 70% 반환
-            player.money += refund
-            tile.owner = None
-            tile.upgrade_level = 0
-            log.append(f"{player.color} 플레이어가 {tile.name}을 팔고 ₩{refund}를 받았습니다.")
+            player.money += refund  # 환급금 지급
+            tile.owner = None  # 소유권 해제
+            tile.upgrade_level = 0  # 업그레이드 초기화
+            msg = f"{player.color} 플레이어가 {tile.name}을 팔고 ₩{refund}를 받았습니다."
+            log.append(msg)
+            print(msg)
 
         return log
 
@@ -130,7 +156,7 @@ class GameManager:
         플레이어가 돈이 부족한 경우, 부동산 매각 후에도 부족하면 파산 처리
         반환값: (is_bankrupt: bool, log: str 또는 [str])
         '''
-        player = self.players[player_index]
+        player = self.players[player_index]  # 현재 플레이어 객체
         # 부동산 매각 시도
         if player.money < amount_needed and player.properties:
             log = self.sell_properties_until_enough(player_index, amount_needed)
@@ -143,17 +169,27 @@ class GameManager:
             # 돈이 음수일 때만 파산 처리 (매각 후 납부 후에도 음수면 파산)
             if player.money < 0:
                 player.is_bankrupt = True
-                log.append(f"{player.color} 플레이어는 파산했습니다.")
+                msg = f"{player.color} 플레이어는 파산했습니다."
+                log.append(msg)
+                print(msg)
                 return True, log
-            return False, log + [f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."]
+            msg = f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."
+            log.append(msg)
+            print(msg)
+            return False, log
         else:
             # 매각 후에도 납부 불가(돈이 음수)면 파산
             if player.money < 0:
                 player.is_bankrupt = True
-                log.append(f"{player.color} 플레이어는 파산했습니다.")
+                msg = f"{player.color} 플레이어는 파산했습니다."
+                log.append(msg)
+                print(msg)
                 return True, log
             # 돈이 0 이상인데도 amount_needed을 못 내는 경우(건물도 없음): 파산 아님, 그냥 못 냄
-            return False, log + [f"{player.color} 플레이어는 통행료를 낼 수 없습니다."]
+            msg = f"{player.color} 플레이어는 통행료를 낼 수 없습니다."
+            log.append(msg)
+            print(msg)
+            return False, log
 
     def check_winner(self):
         # 파산하지 않은 플레이어가 1명 남으면 그 플레이어가 우승
@@ -166,6 +202,8 @@ class GameManager:
         """
         플레이어를 지정한 타일로 순간이동시키는 메서드
         """
-        player = self.players[player_index]
-        player.position = destination_tile_index
-        return True, f"{player.color} 플레이어가 {destination_tile_index}번 타일로 순간이동했습니다."
+        player = self.players[player_index]  # 현재 플레이어 객체
+        player.position = destination_tile_index  # 위치 이동
+        msg = f"{player.color} 플레이어가 {destination_tile_index}번 타일로 순간이동했습니다."
+        print(msg)
+        return True, msg
