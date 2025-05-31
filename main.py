@@ -135,6 +135,20 @@ def handle_tile_event_after_move(current_player, player_index):
     else:
         # 일반 타일(구매/업그레이드/이벤트)
         if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
+            # 소지금 부족 시 바로 메시지 출력 후 턴 넘김
+            if current_player.money < arrived_tile.price:
+                add_console_message(f"{current_player.color} 플레이어는 {arrived_tile.name}을(를) 구매할 돈이 부족합니다.")
+                game_manager.turn_over()
+                winner_tuple = game_manager.check_winner()
+                winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
+                if winner:
+                    if reason == 'bankruptcy':
+                        add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                    elif reason == 'property':
+                        add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                    else:
+                        add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
+                return True
             ask_buy = True
             buy_tile_index = current_player.position
             buy_player_index = player_index
