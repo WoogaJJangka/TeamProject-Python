@@ -172,6 +172,22 @@ while running: # 게임이 실행중인 동안
                 add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
             running = False
             break
+    
+    # 파산한 플레이어의 차례는 자동으로 넘김
+    while game_manager.get_current_player().is_bankrupt:
+        add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산했으므로 턴을 옮깁니다.")
+        game_manager.turn_over()
+        winner_tuple = game_manager.check_winner()
+        winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
+        if winner:
+            if reason == 'bankruptcy':
+                add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+            elif reason == 'property':
+                add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+            else:
+                add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
+            running = False
+            break
 
     mouse_pos = pygame.mouse.get_pos()
 
