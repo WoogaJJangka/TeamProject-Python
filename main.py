@@ -291,8 +291,7 @@ while running: # 게임이 실행중인 동안
         elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN: # 일반적인 이벤트 처리 (주사위 굴리기 및 특수 타일 이벤트)
             if event.key == pygame.K_SPACE:
                 current_player = game_manager.get_current_player()
-                player_index = game_manager.current_player_index
-                arrived_tile = tiles[current_player.position]
+                add_console_message(f"{current_player.color} 플레이어의 턴입니다.") # 현재 플레이어 턴 메시지
                 if current_player.is_bankrupt: # 파산 상태인 플레이어는 턴을 넘김
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
@@ -301,7 +300,8 @@ while running: # 게임이 실행중인 동안
                     current_player.move(steps)
                     add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    
+                    player_index = game_manager.current_player_index
+                    arrived_tile = tiles[current_player.position]
                     special_tile_names = ["출도", "학", "무주도", "미정"]
                     add_console_message(f"{current_player.color} 플레이어가 {arrived_tile.name} 칸에 도착했습니다.")
                     if current_player.position == 15: # 학 칸에 도착했을 때
@@ -311,6 +311,7 @@ while running: # 게임이 실행중인 동안
                         if not handle_teleport(current_player, player_index): # 텔레포트 실행
                             running = False
                             break
+                        arrived_tile = tiles[current_player.position]  # 텔레포트 후 위치 업데이트
                         special_tile_names = ["출도", "학", "무주도", "미정"]
                         if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
                             # 주인이 없으면 구매 묻기
