@@ -208,9 +208,15 @@ while running: # 게임이 실행중인 동안
                     buy_buttons = []
                     game_manager.turn_over()
                     # 우승자 체크
-                    winner = game_manager.check_winner()
+                    winner, reason = game_manager.check_winner()
                     if winner:
-                        add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                        # 우승 이유에 따라 메시지 다르게 출력
+                        if reason == 'bankruptcy':
+                            add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                        elif reason == 'property':
+                            add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                        else:
+                            add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
                         running = False
                     break
         elif ask_upgrade and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -228,7 +234,12 @@ while running: # 게임이 실행중인 동안
                     game_manager.turn_over()
                     winner = game_manager.check_winner()
                     if winner:
-                        add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                        if reason == 'bankruptcy':
+                            add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                        elif reason == 'property':
+                            add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                        else:
+                            add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
                         running = False
                     break
         elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN:
@@ -280,7 +291,12 @@ while running: # 게임이 실행중인 동안
                             game_manager.turn_over()
                             winner = game_manager.check_winner()
                             if winner:
-                                add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                                if reason == 'bankruptcy':
+                                    add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                                elif reason == 'property':
+                                    add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                                else:
+                                    add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
                                 running = False
                     else:
                         if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
@@ -308,7 +324,12 @@ while running: # 게임이 실행중인 동안
                             game_manager.turn_over()
                             winner = game_manager.check_winner()
                             if winner:
-                                add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                                if reason == 'bankruptcy':
+                                    add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                                elif reason == 'property':
+                                    add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                                else:
+                                    add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
                                 running = False
             elif event.key == pygame.K_p and pygame.key.get_pressed()[pygame.K_F1]:
                 add_console_message(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
