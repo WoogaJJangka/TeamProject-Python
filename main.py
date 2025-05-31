@@ -81,23 +81,26 @@ def add_console_message(msg):
 # 콘솔 메시지 그리기 함수: 화면 왼쪽 중앙에 최대 8줄, 폰트 크기 10, 배경 없이 텍스트만 표시
 def draw_console_messages(surface):
     font = pygame.font.Font("board_set/font.ttf", 10)
-    # 화면 왼쪽 중앙에 정렬
     start_y = background.get_height() // 2 - (MAX_CONSOLE_LINES * 20)
     box_width = 290
     box_height = MAX_CONSOLE_LINES * 80  # 충분히 크게
-    # 메시지 영역을 완전히 흰색으로 clear (알파값 255, 완전 불투명)
     s = pygame.Surface((box_width, box_height))
     s.fill((255, 255, 255))
     surface.blit(s, (40, start_y - 2))
-    # 메시지 텍스트만 그림 (한 줄이 너무 길면 줄바꿈)
     max_chars = 30
-    y = start_y
+    # 아래에서 위로 출력: y를 아래에서 시작해서 위로 감소
+    y = start_y + (MAX_CONSOLE_LINES - 1) * 20  # 가장 아래에서 시작
+    all_lines = []
     for msg in console_messages:
         lines = [msg[i:i+max_chars] for i in range(0, len(msg), max_chars)]
-        for line in lines:
-            rendered = font.render(line, True, (30, 30, 30))
-            surface.blit(rendered, (45, y))
-            y += 20
+        all_lines.extend(lines[::-1])  # 줄바꿈된 라인을 역순으로 추가 (아래줄이 먼저 나오게)
+    all_lines = all_lines[:MAX_CONSOLE_LINES]  # 최대 줄 수만큼만 출력
+    for line in all_lines:
+        rendered = font.render(line, True, (30, 30, 30))
+        surface.blit(rendered, (45, y))  # y값을 위로 감소시키며 출력
+        y -= 20  # 한 줄 위로 이동
+        if y < start_y - 20:
+            break  # 출력 영역을 벗어나면 중단
 
 
 # --- Button 클래스 추가 ---
