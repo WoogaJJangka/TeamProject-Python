@@ -96,6 +96,39 @@ def draw_console_messages(surface):
             y += 20
 
 
+# --- Button 클래스 추가 ---
+class Button:
+    def __init__(self, rect, text, font, color=(200,200,200), text_color=(0,0,0)):
+        self.rect = pygame.Rect(rect)
+        self.text = text
+        self.font = font
+        self.color = color
+        self.text_color = text_color
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.color, self.rect)
+        pygame.draw.rect(surface, (100,100,100), self.rect, 2)
+        rendered = self.font.render(self.text, True, self.text_color)
+        text_rect = rendered.get_rect(center=self.rect.center)
+        surface.blit(rendered, text_rect)
+
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos)
+
+
+# --- 구매 관련 상태 변수 ---
+ask_buy = False
+buy_tile_index = None
+buy_player_index = None
+buy_buttons = []
+
+# --- 업그레이드 관련 상태 변수 ---
+ask_upgrade = False
+upgrade_tile_index = None
+upgrade_player_index = None
+upgrade_buttons = []
+
+
 running = True
 while running:
     time_delta = clock.tick(60)
@@ -109,36 +142,87 @@ while running:
             break
     for tile in tiles:
         highlight = tile.visual.rect.collidepoint(mouse_pos)
-        # 1. empty_rect에 소유자 색 네모를 먼저 그림 (draw_owner_box가 흰색/소유자색 모두 처리)
         tile.draw_owner_box(background)
-        # 2. empty_rect에 흰색 네모를 덮지 않음 (중복 제거)
-        # 3. 타일 본체를 항상 마지막에 그림 (이름 등은 위에 오도록)
         tile.visual.draw(background, tile.name, highlight)
 
-    # 반드시 타일 정보 박스가 보이게!
     if highlight_tile:
         highlight_tile.draw_info(background, pos=(50, 50))
     else:
-        # 마우스가 아무 타일에도 없을 때, 현재 플레이어의 위치 타일 정보를 표시
         current_tile = tiles[game_manager.get_current_player().position]
         current_tile.draw_info(background, pos=(50, 50))
 
-    # 플레이어 정보 패널 그리기 (draw_info 먼저)
     for idx, p in enumerate(game_manager.players):
         p.draw_info(background, pos=(1200, 50 + idx * 160))
-    # 모든 패널 위에 흰색 테두리로 덮어서 기존 테두리 완전 제거
     for idx in range(len(game_manager.players)):
         pygame.draw.rect(background, (255,255,255), (1195, 45 + idx*160, 260, 160), 4)
-    # 자신의 차례인 패널에만 빨간 테두리
     idx = game_manager.current_player_index
     pygame.draw.rect(background, (255,0,0), (1195, 45 + idx*160, 260, 160), 4)
 
     # 콘솔 메시지 그리기
     draw_console_messages(background)
+
+    # --- 구매 질문 및 버튼 그리기 ---
+    if ask_buy:
+        font_q = pygame.font.Font("board_set/font.ttf", 18)
+        question = font_q.render("땅을 구매하겠습니까?", True, (0,0,0))
+        background.blit(question, (60, background.get_height()-120))
+        for btn in buy_buttons:
+            btn.draw(background)
+    # --- 업그레이드 질문 및 버튼 그리기 ---
+    if ask_upgrade:
+        font_q = pygame.font.Font("board_set/font.ttf", 18)
+        question = font_q.render("땅을 업그레이드 하시겠습니까?", True, (0,0,0))
+        background.blit(question, (60, background.get_height()-180))
+        for btn in upgrade_buttons:
+            btn.draw(background)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
+        elif ask_buy and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            for idx, btn in enumerate(buy_buttons):
+                if btn.is_clicked(event.pos):
+                    if idx == 0:  # 예
+                        # 특수 칸(출도, 학, 무주도, 미정)은 구매 불가
+                        special_tile_names = ["출도", "학", "무주도", "미정"]
+                        tile = tiles[buy_tile_index]
+                        if tile.name in special_tile_names:
+                            add_console_message(f"{tile.name} 칸은 구매할 수 없습니다.")
+                        else:
+                            success, message = game_manager.buy_tile(buy_tile_index, buy_player_index)
+                            add_console_message(message)
+                    else:  # 아니요
+                        add_console_message("구매를 취소했습니다.")
+                    ask_buy = False
+                    buy_tile_index = None
+                    buy_player_index = None
+                    buy_buttons = []
+                    game_manager.turn_over()
+                    # 우승자 체크
+                    winner = game_manager.check_winner()
+                    if winner:
+                        add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                        running = False
+                    break
+        elif ask_upgrade and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            for idx, btn in enumerate(upgrade_buttons):
+                if btn.is_clicked(event.pos):
+                    if idx == 0:  # 예
+                        success, message = game_manager.upgrade_tile(upgrade_tile_index, upgrade_player_index)
+                        add_console_message(message)
+                    else:
+                        add_console_message("업그레이드를 취소했습니다.")
+                    ask_upgrade = False
+                    upgrade_tile_index = None
+                    upgrade_player_index = None
+                    upgrade_buttons = []
+                    game_manager.turn_over()
+                    winner = game_manager.check_winner()
+                    if winner:
+                        add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                        running = False
+                    break
+        elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 current_player = game_manager.get_current_player()
                 if current_player.is_bankrupt:
@@ -149,9 +233,9 @@ while running:
                     current_player.move(steps)
                     add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
-                    player_index = game_manager.current_player_index  # 현재 턴 인덱스를 직접 사용
-                    # 이동 후 도착 메시지 추가
+                    player_index = game_manager.current_player_index
                     arrived_tile = tiles[current_player.position]
+                    special_tile_names = ["출도", "학", "무주도", "미정"]
                     add_console_message(f"{current_player.color} 플레이어가 {arrived_tile.name} 칸에 도착했습니다.")
                     if current_player.position == 15:
                         add_console_message("학 칸에 도착했습니다! 원하는 타일을 클릭해 이동하세요.")
@@ -160,26 +244,72 @@ while running:
                         if not handle_teleport(current_player, player_index):
                             running = False
                             break
-                        success, message = game_manager.tile_event(current_player.position, player_index)
-                        add_console_message(message)
-                        game_manager.turn_over()
+                        arrived_tile = tiles[current_player.position]
+                        special_tile_names = ["출도", "학", "무주도", "미정"]
+                        if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
+                            ask_buy = True
+                            buy_tile_index = current_player.position
+                            buy_player_index = player_index
+                            font_btn = pygame.font.Font("board_set/font.ttf", 18)
+                            buy_buttons = [
+                                Button((60, background.get_height()-80, 80, 40), "예", font_btn),
+                                Button((160, background.get_height()-80, 80, 40), "아니요", font_btn)
+                            ]
+                        elif arrived_tile.owner == current_player and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.upgrade_level < 2:
+                            ask_upgrade = True
+                            upgrade_tile_index = current_player.position
+                            upgrade_player_index = player_index
+                            font_btn = pygame.font.Font("board_set/font.ttf", 18)
+                            upgrade_buttons = [
+                                Button((60, background.get_height()-140, 80, 40), "예", font_btn),
+                                Button((160, background.get_height()-140, 80, 40), "아니요", font_btn)
+                            ]
+                        else:
+                            success, message = game_manager.tile_event(current_player.position, player_index)
+                            if message:
+                                add_console_message(message)
+                            game_manager.turn_over()
+                            winner = game_manager.check_winner()
+                            if winner:
+                                add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                                running = False
                     else:
-                        success, message = game_manager.tile_event(current_player.position, player_index)
-                        add_console_message(message)
-                        game_manager.turn_over()
-                        
-            # F1 + p (커맨드)
+                        if arrived_tile.owner is None and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.name not in special_tile_names:
+                            ask_buy = True
+                            buy_tile_index = current_player.position
+                            buy_player_index = player_index
+                            font_btn = pygame.font.Font("board_set/font.ttf", 18)
+                            buy_buttons = [
+                                Button((60, background.get_height()-80, 80, 40), "예", font_btn),
+                                Button((160, background.get_height()-80, 80, 40), "아니요", font_btn)
+                            ]
+                        elif arrived_tile.owner == current_player and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.upgrade_level < 2:
+                            ask_upgrade = True
+                            upgrade_tile_index = current_player.position
+                            upgrade_player_index = player_index
+                            font_btn = pygame.font.Font("board_set/font.ttf", 18)
+                            upgrade_buttons = [
+                                Button((60, background.get_height()-140, 80, 40), "예", font_btn),
+                                Button((160, background.get_height()-140, 80, 40), "아니요", font_btn)
+                            ]
+                        else:
+                            success, message = game_manager.tile_event(current_player.position, player_index)
+                            if message:
+                                add_console_message(message)
+                            game_manager.turn_over()
+                            winner = game_manager.check_winner()
+                            if winner:
+                                add_console_message(f"{winner.color} 플레이어가 우승했습니다!")
+                                running = False
             elif event.key == pygame.K_p and pygame.key.get_pressed()[pygame.K_F1]:
                 add_console_message(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
-            # F1 + m (커맨드)
             elif event.key == pygame.K_m and pygame.key.get_pressed()[pygame.K_F1]:
                 add_console_message(f'현제 플레이어들의 돈: {[p.money for p in game_manager.players]}')
-            # F1 + t (커맨드)
             elif event.key == pygame.K_t and pygame.key.get_pressed()[pygame.K_F1]:
                 selected_player_index = int(input("플레이어 인덱스를 입력하세요 (0-3): "))
                 destination_tile_index = int(input("이동할 타일의 인덱스를 입력하세요 (0-19): "))
                 game_manager.teleport_player(selected_player_index, destination_tile_index)
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        elif not ask_buy and not ask_upgrade and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for idx, tile in enumerate(tiles):
                 if tile.is_clicked(mouse_pos):
                     add_console_message(f"{tile.name} 타일 클릭")

@@ -38,14 +38,18 @@ class GameManager:
 
     def buy_tile(self, tile_index, player_index):
         ''' 타일 구매 시도 함수 '''
-        player = self.players[player_index]
+        special_tile_names = ["출도", "학", "무주도", "미정"]
         tile = self.tiles[tile_index]
-        if player.pay(tile.price):  # 플레이어가 돈을 낼 수 있으면
-            tile.owner = player
-            player.properties.append(tile)
-            return True, f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
-        else:
+        if tile.name in special_tile_names:
+            return False, f"{tile.name} 칸은 구매할 수 없습니다."
+        player = self.players[player_index]
+        # 돈이 부족하면 구매 불가, 돈 차감도 하지 않음
+        if player.money < tile.price:
             return False, f"{player.color} 플레이어는 {tile.name}을(를) 구매할 돈이 부족합니다."
+        player.pay(tile.price)
+        tile.owner = player
+        player.properties.append(tile)
+        return True, f"{player.color} 플레이어가 {tile.name}을(를) 구매했습니다."
 
     def upgrade_tile(self, tile_index, player_index):
         ''' 소유한 타일 업그레이드 시도 '''
@@ -74,16 +78,24 @@ class GameManager:
             return False, "통행료를 지불할 필요가 없습니다."
 
         toll = tile.toll
-        if player.pay(toll):
-            tile.owner.money += toll
-            return True, f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."
+        # 1. 돈이 부족하면 건물 매각 시도
+        if player.money < toll and player.properties:
+            log = self.sell_properties_until_enough(player_index, toll)
         else:
-            # 돈이 부족하면 파산 처리 또는 부동산 매각 시도
-            is_bankrupt, log = self.check_and_handle_bankruptcy(player_index, toll)
-            if is_bankrupt:
-                return False, log
-            else:
-                return True, log + [f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다."]
+            log = []
+        # 2. 매각 후에도 돈이 부족하면 가진 돈 전부를 소유주에게 주고 파산
+        if player.money >= toll:
+            player.pay(toll)
+            tile.owner.money += toll
+            log.append(f"{player.color} 플레이어가 {tile.owner.color} 플레이어에게 통행료 ₩{toll}을 지불했습니다.")
+            return True, log
+        else:
+            paid = max(0, player.money)
+            tile.owner.money += paid
+            player.money -= paid
+            player.is_bankrupt = True
+            log.append(f"{player.color} 플레이어가 가진 돈 {paid}원을 모두 {tile.owner.color} 플레이어에게 주고 파산했습니다.")
+            return False, log
 
     def tile_event(self, tile_index, player_index):
         ''' 타일에 도착했을 때 발생하는 이벤트 처리 '''
@@ -92,7 +104,8 @@ class GameManager:
         if tile.owner is None:
             return self.buy_tile(tile_index, player_index)
         elif tile.owner == player:
-            return self.upgrade_tile(tile_index, player_index)
+            # 업그레이드 질문은 main.py에서 버튼으로 처리
+            return False, ""
         else:
             return self.pay_toll(tile_index, player_index)
 
@@ -127,12 +140,27 @@ class GameManager:
         # 매각 후 납부 가능하면 납부
         if player.money >= amount_needed:
             player.pay(amount_needed)
+            # 돈이 음수일 때만 파산 처리 (매각 후 납부 후에도 음수면 파산)
+            if player.money < 0:
+                player.is_bankrupt = True
+                log.append(f"{player.color} 플레이어는 파산했습니다.")
+                return True, log
             return False, log + [f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."]
         else:
-            # 여전히 돈이 부족하면 파산
-            player.is_bankrupt = True
-            log.append(f"{player.color} 플레이어는 파산했습니다.")
-            return True, log
+            # 매각 후에도 납부 불가(돈이 음수)면 파산
+            if player.money < 0:
+                player.is_bankrupt = True
+                log.append(f"{player.color} 플레이어는 파산했습니다.")
+                return True, log
+            # 돈이 0 이상인데도 amount_needed을 못 내는 경우(건물도 없음): 파산 아님, 그냥 못 냄
+            return False, log + [f"{player.color} 플레이어는 통행료를 낼 수 없습니다."]
+
+    def check_winner(self):
+        # 파산하지 않은 플레이어가 1명 남으면 그 플레이어가 우승
+        alive_players = [p for p in self.players if not p.is_bankrupt]
+        if len(alive_players) == 1:
+            return alive_players[0]
+        return None
 
     def teleport_player(self, player_index, destination_tile_index):
         """
