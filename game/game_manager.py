@@ -1,4 +1,3 @@
-import random  # 랜덤 모듈 임포트
 from game.tile_info import all_tiles  # 타일 정보와 시각 객체를 포함한 타일 리스트 생성 함수
 from game.player import Player  # 플레이어 클래스
 
@@ -148,7 +147,6 @@ class GameManager:
             msg = f"{player.color} 플레이어가 {tile.name}을 팔고 ₩{refund}를 받았습니다."
             log.append(msg)
             print(msg)
-
         return log
 
     def check_and_handle_bankruptcy(self, player_index, amount_needed):
@@ -157,13 +155,13 @@ class GameManager:
         반환값: (is_bankrupt: bool, log: str 또는 [str])
         '''
         player = self.players[player_index]  # 현재 플레이어 객체
-        # 부동산 매각 시도
+        # 1. 시도: 가진 돈으로는 부족 → 땅을 팔아서 마련
         if player.money < amount_needed and player.properties:
             log = self.sell_properties_until_enough(player_index, amount_needed)
         else:
             log = []
 
-        # 매각 후 납부 가능하면 납부
+        # 2. 다시 확인: 충분한 돈이 모였는지
         if player.money >= amount_needed:
             player.pay(amount_needed)
             # 돈이 음수일 때만 파산 처리 (매각 후 납부 후에도 음수면 파산)

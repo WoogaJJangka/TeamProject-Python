@@ -7,6 +7,7 @@ import game.game_manager as gm
 import game.player as player
 
 print("게임 시작1")
+# pygame 초기화 및 화면 설정
 pygame.init()
 clock = pygame.time.Clock()
 background = pygame.display.set_mode((1500, 1000))
@@ -14,6 +15,7 @@ background.fill((255, 255, 255))
 
 # 보드 배경 그리기
 BoardScreen(background)
+
 
 # 타일 및 객체 생성
 roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
@@ -131,9 +133,11 @@ upgrade_player_index = None
 upgrade_buttons = []
 
 
-running = True
-while running:
-    time_delta = clock.tick(60)
+running = True # 실행 상태
+
+while running: # 게임이 실행중인 동안
+    clock.tick(120)
+
     mouse_pos = pygame.mouse.get_pos()
 
     # 타일 하이라이트 및 정보 표시

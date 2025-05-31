@@ -162,4 +162,5 @@ def all_tiles():
         visual = TileVisual(size, name_pos, rect_info)  # 타일 시각 객체 생성
         tile = Tile(name, visual, idx, price, empty_rect)  # 타일 객체 생성
         tiles.append(tile)
+
     return tiles
