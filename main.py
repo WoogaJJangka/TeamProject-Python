@@ -40,7 +40,6 @@ for p in game_manager.players:
 
 
 def handle_teleport(current_player, player_index):
-    # print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
     teleport_done = False
     while not teleport_done:
         for event in pygame.event.get():
@@ -49,17 +48,13 @@ def handle_teleport(current_player, player_index):
                 for idx, tile in enumerate(tiles):
                     if tile.is_clicked(mouse_pos):
                         if idx == 15:
-                            # print("학 타일로는 순간이동할 수 없습니다.")
                             pass
                         else:
-                            # print(f"{idx}번 타일로 순간이동 시도")
                             success, message = game_manager.teleport_player(player_index, idx)
-                            # print(message)
                             teleport_done = True
                             break
             elif event.type == pygame.QUIT:
                 return False  # 게임 종료
-        # 순간이동 선택 중에도 타일 하이라이트 적용
         mouse_pos = pygame.mouse.get_pos()
         highlight_tile = None
         for tile in tiles:
@@ -74,9 +69,14 @@ def handle_teleport(current_player, player_index):
         if highlight_tile:
             highlight_tile.draw_info(background, pos=(50, 50))
         for idx, p in enumerate(game_manager.players):
-            # 디버그 print 제거
-            # print(f"[DEBUG] idx={idx}, turn={p.turn}, color={p.color}, pos={p.position}, properties={[t.name for t in p.properties]}")
             p.draw_info(background, pos=(1200, 50 + idx * 160))
+        # --- 플레이어 말 그리기 (순간이동 중에도 항상 그림) ---
+        for idx, p in enumerate(game_manager.players):
+            tile = tiles[p.position]
+            orig_pos = tile.player_positions[p.turn]
+            pos = (orig_pos[0] + 10, orig_pos[1] + 10)
+            img_rect = p.piece_image.get_rect(center=(int(pos[0]), int(pos[1])))
+            background.blit(p.piece_image, img_rect)
         pygame.display.update()
     return True
 
@@ -96,24 +96,38 @@ def add_console_message(msg):
 
 # 콘솔 메시지 그리기 함수: 화면 왼쪽 중앙에 최대 8줄, 폰트 크기 10, 배경 없이 텍스트만 표시
 def draw_console_messages(surface):
+    # 폰트 설정 (작은 크기)
     font = pygame.font.Font("board_set/font.ttf", 10)
+    # 메시지 박스의 시작 y좌표 계산 (화면 중앙 기준)
     start_y = background.get_height() // 2 - (MAX_CONSOLE_LINES * 20)
     box_width = 290
-    box_height = MAX_CONSOLE_LINES * 80  # 충분히 크게
+    box_height = MAX_CONSOLE_LINES * 80
+    # 메시지 영역을 흰색으로 초기화
     s = pygame.Surface((box_width, box_height))
     s.fill((255, 255, 255))
     surface.blit(s, (40, start_y - 2))
-    max_chars = 30
-    # 아래에서 위로 출력: y를 아래에서 시작해서 위로 감소
-    y = start_y + (MAX_CONSOLE_LINES - 1) * 20  # 가장 아래에서 시작
-    all_lines = []
+    max_chars = 30  # 한 줄에 표시할 최대 문자 수
+    y = start_y + (MAX_CONSOLE_LINES - 1) * 20  # 아래에서 위로 출력할 y좌표
+    all_lines = []  # 실제로 출력할 모든 줄을 담는 리스트
     for msg in console_messages:
-        lines = [msg[i:i+max_chars] for i in range(0, len(msg), max_chars)]
-        all_lines.extend(lines[::-1])  # 줄바꿈된 라인을 역순으로 추가 (아래줄이 먼저 나오게)
+        # 만약 msg가 리스트라면 문자열로 변환해서 출력 (리스트 형태로 보이지 않게)
+        if isinstance(msg, list):
+            msg = ', '.join(str(m) for m in msg)
+        lines = []  # 한 메시지를 여러 줄로 쪼갤 때 사용
+        i = 0
+        while i < len(msg):
+            chunk = msg[i:i+max_chars]  # max_chars만큼 자름
+            # 마침표만 있는 줄은 출력하지 않음 (불필요한 줄바꿈 방지)
+            if chunk.strip() == ".":
+                i += max_chars
+                continue
+            lines.append(chunk)
+            i += max_chars
+        all_lines.extend(lines[::-1])  # 아래에서 위로 출력하므로 역순으로 추가
     all_lines = all_lines[:MAX_CONSOLE_LINES]  # 최대 줄 수만큼만 출력
     for line in all_lines:
-        rendered = font.render(line, True, (30, 30, 30))
-        surface.blit(rendered, (45, y))  # y값을 위로 감소시키며 출력
+        rendered = font.render(line, True, (30, 30, 30))  # 텍스트 렌더링
+        surface.blit(rendered, (45, y))  # 해당 y좌표에 출력
         y -= 20  # 한 줄 위로 이동
         if y < start_y - 20:
             break  # 출력 영역을 벗어나면 중단
@@ -258,7 +272,7 @@ while running: # 게임이 실행중인 동안
                     upgrade_player_index = None
                     upgrade_buttons = []
                     game_manager.turn_over()
-                    winner = game_manager.check_winner()
+                    winner, reason = game_manager.check_winner()
                     if winner:
                         if reason == 'bankruptcy':
                             add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
@@ -315,8 +329,9 @@ while running: # 게임이 실행중인 동안
                             if message:
                                 add_console_message(message)
                             game_manager.turn_over()
-                            winner = game_manager.check_winner()
+                            winner, reason = game_manager.check_winner()
                             if winner:
+                                print(winner)
                                 if reason == 'bankruptcy':
                                     add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
                                 elif reason == 'property':
@@ -348,8 +363,9 @@ while running: # 게임이 실행중인 동안
                             if message:
                                 add_console_message(message)
                             game_manager.turn_over()
-                            winner = game_manager.check_winner()
+                            winner, reason = game_manager.check_winner()
                             if winner:
+                                print(winner)
                                 if reason == 'bankruptcy':
                                     add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
                                 elif reason == 'property':
