@@ -159,6 +159,21 @@ def handle_tile_event_after_move(current_player, player_index):
             ]
             return True
         elif arrived_tile.owner == current_player and hasattr(arrived_tile, "price") and arrived_tile.price > 0 and arrived_tile.upgrade_level < 2:
+            # 업그레이드 비용 부족 시 바로 메시지 출력 후 턴 넘김
+            upgrade_cost = 500 if arrived_tile.upgrade_level == 0 else 1000
+            if current_player.money < upgrade_cost:
+                add_console_message(f"{current_player.color} 플레이어는 업그레이드 비용 ₩{upgrade_cost}가 부족합니다.")
+                game_manager.turn_over()
+                winner_tuple = game_manager.check_winner()
+                winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
+                if winner:
+                    if reason == 'bankruptcy':
+                        add_console_message(f"{winner.color} 플레이어를 제외한 모두가 파산했습니다. {winner.color} 플레이어 우승!")
+                    elif reason == 'property':
+                        add_console_message(f"땅 개수 차이로 {winner.color} 플레이어 우승!")
+                    else:
+                        add_console_message(f"{getattr(winner, 'color', str(winner))} 플레이어가 우승했습니다!")
+                return True
             ask_upgrade = True
             upgrade_tile_index = current_player.position
             upgrade_player_index = player_index

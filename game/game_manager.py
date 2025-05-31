@@ -26,6 +26,8 @@ class GameManager:
     def turn_over(self):
         # 다음 플레이어로 턴 넘기기 (0→1→2→3→0)
         self.current_player_index = (self.current_player_index + 1) % 4
+        next_player = self.players[self.current_player_index]
+        print(f"다음 턴: {next_player.color} 플레이어")
         return self.current_player_index
 
     def buy_tile(self, tile_index, player_index):
@@ -161,7 +163,6 @@ class GameManager:
                 return True, log
             msg = f"{player.color} 플레이어가 통행료 ₩{amount_needed}를 납부했습니다."
             log.append(msg)
-            print(msg)
             return False, log
         else:
             # 매각 후에도 납부 불가(돈이 음수)면 파산
