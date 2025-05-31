@@ -308,7 +308,7 @@ while running: # 게임이 실행중인 동안
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 else:
-                    steps = roller.roll_dice()  # 주사위 위치 조정(group_pos=[좌표])
+                    steps = roller.roll_dice(group_pos=(44, 600))  # 주사위 위치 조정(group_pos=(좌표)), (0, 0)은 화면 좌측 상단
                     current_player.move(steps)
                     add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     print(f"현재 위치: {current_player.position}")
