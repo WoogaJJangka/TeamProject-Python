@@ -22,6 +22,22 @@ roller = DiceRoller(background, os.path.join("roll_dices", "assets"))
 game_manager = gm.GameManager()
 tiles = game_manager.tiles  # 반드시 game_manager.tiles만 사용
 
+# --- 플레이어 말 이미지 로딩 및 연결 ---
+PLAYER_IMAGE_PATHS = {
+    'red': os.path.join("game", "assets", "red.png"),
+    'blue': os.path.join("game", "assets", "blue.png"),
+    'green': os.path.join("game", "assets", "green.png"),
+    'yellow': os.path.join("game", "assets", "yellow.png"),
+}
+PLAYER_IMAGES = {}
+for color, path in PLAYER_IMAGE_PATHS.items():
+    img = pygame.image.load(path)
+    img = pygame.transform.scale(img, (40, 40))  # 말 크기 조정
+    PLAYER_IMAGES[color] = img
+# 각 Player 객체에 이미지 연결 (속성 추가)
+for p in game_manager.players:
+    p.piece_image = PLAYER_IMAGES[p.color]
+
 
 def handle_teleport(current_player, player_index):
     # print(f"{current_player.color} 플레이어가 학 타일에 도착했습니다.")
@@ -163,6 +179,16 @@ while running: # 게임이 실행중인 동안
         pygame.draw.rect(background, (255,255,255), (1195, 45 + idx*160, 260, 160), 4)
     idx = game_manager.current_player_index
     pygame.draw.rect(background, (255,0,0), (1195, 45 + idx*160, 260, 160), 4)
+
+    # --- 플레이어 말 그리기 ---
+    for idx, p in enumerate(game_manager.players):
+        tile = tiles[p.position]
+        # 각 타일의 player_positions에서 플레이어 turn에 맞는 위치 사용, x, y 각각 +10씩 이동
+        orig_pos = tile.player_positions[p.turn]
+        pos = (orig_pos[0] + 10, orig_pos[1] + 10)
+        # 이미지 중앙 정렬
+        img_rect = p.piece_image.get_rect(center=(int(pos[0]), int(pos[1])))
+        background.blit(p.piece_image, img_rect)
 
     # 콘솔 메시지 그리기
     draw_console_messages(background)
