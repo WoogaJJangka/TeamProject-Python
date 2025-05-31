@@ -19,12 +19,10 @@ class Player:  # 플레이어 클래스 정의
 
     def pay(self, amount):
         # 플레이어가 금액을 지불하는 메서드
-        self.money -= amount  # 보유 금액에서 지불할 금액만큼 차감
-        if self.money >= 0:
-            # 잔액이 0 이상이면 정상 지불
+        if self.money >= amount: # 잔액이 지불 비용 이상이면 정상 지불
+            self.money -= amount  # 보유 금액에서 지불할 금액만큼 차감
             return True
-        elif self.money < 0:
-            # 잔액이 0보다 작아졌다면 지불 실패 (파산 가능성)
+        elif self.money < amount: # 잔액이 지불 비용보다 작아졌다면 지불 실패 (파산 가능성)
             return False
     
     def draw_info(self, background, pos=(1250, 50)):
