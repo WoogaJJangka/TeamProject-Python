@@ -441,7 +441,7 @@ while running:  # 게임이 실행중인 동안 반복
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 elif getattr(current_player, 'stop_turns', 0) > 0:
-                    # 무주도 등 이동불가 상태면 주사위만 굴리고 이동 불가 처리
+                    # 무주도 등 이동불가 상태면 주사위 굴리기
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
                     dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
                     add_console_message(f"주사위 결과: {dice1}, {dice2}")
@@ -451,9 +451,7 @@ while running:  # 게임이 실행중인 동안 반복
                         current_player.move(steps)  # 플레이어 이동
                         add_console_message(f"두 눈이 같아 {steps}칸 이동합니다!")
                         current_player.stop_turns = 0  # 이동불가 해제
-                        # 더블 보너스 500원 지급
-                        current_player.money += 500
-                        add_console_message(f"더블 보너스! 500원을 받았습니다.")
+                        # 더블 보너스 지급 없음 (무주도에서 나올 때)
                         player_index = game_manager.current_player_index
                         result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
                         if result == 'exit':

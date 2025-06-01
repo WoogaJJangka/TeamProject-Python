@@ -86,19 +86,3 @@ class DiceRoller:
         time.sleep(1)
 
         return idx1 + 1, idx2 + 1 # 실제 주사위 눈(1~6) 반환
-
-    def roll_dice(self, group_pos=None):  # 위치 인자 추가
-        """
-        더블(같은 눈)이 나오면 다시 굴리는 규칙을 적용한 주사위 굴리기 함수.
-        group_pos: 주사위 객체 그룹의 좌상단 위치
-        """
-        result1, result2 = self.roll_two_dice(group_pos=group_pos)
-        print(f"🎲 주사위 결과: {result1}, {result2}")
-        step = (result1 + result2)
-        print(step, 0)
-        while result1 == result2: # 더블이면 다시 굴림
-            result1, result2 = self.roll_two_dice(group_pos=group_pos)
-            print(f"🎲 주사위 결과: {result1}, {result2}")
-            step += (result1 + result2)
-            print(step, 1)
-        return step # 총 이동 칸 수 반환
