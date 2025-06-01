@@ -102,24 +102,4 @@ class DiceRoller:
         self.screen.blit(self.dice_imgs[idx2], pos2)
         pygame.display.update()
         time.sleep(1)  # 1초 동안 결과를 보여줌
-
-        return idx1 + 1, idx2 + 1  # 주사위 눈 1~6 반환
-
-    def roll_dice(self, group_pos=None):
-        """
-        🎲 주사위를 굴리고, 더블(같은 눈)이 나오면 다시 굴리는 규칙을 적용.
-        - group_pos: 주사위 그룹의 위치 (지정하지 않으면 화면 중앙)
-        - return: 두 주사위의 합 (총 이동 칸 수)
-        """
-        result1, result2 = self.roll_two_dice(group_pos=group_pos)  # 첫 굴림
-        print(f"🎲 주사위 결과: {result1}, {result2}")
-        step = result1 + result2  # 이동 칸 수 초기값
-
-        # 🎲 더블(같은 눈)이 나올 경우 반복
-        while result1 == result2:
-            result1, result2 = self.roll_two_dice(group_pos=group_pos)
-            print(f"🎲 주사위 결과: {result1}, {result2}")
-            step += (result1 + result2)  # 이동 칸 누적
-
-        print(step, 1 if result1 == result2 else 0)  # 디버깅용 출력
-        return step  # 총 이동 칸 수 반환
+        return idx1 + 1, idx2 + 1 # 실제 주사위 눈(1~6) 반환
