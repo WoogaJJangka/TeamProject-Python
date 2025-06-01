@@ -3,73 +3,91 @@ import os
 import random
 import time
 
-# 주사위 클래스
+# 🎲 주사위 클래스 정의
 class DiceRoller: 
-    def __init__(self, screen, image_folder_path, size = (100,100)):
-        self.screen = screen # 주사위를 그릴 pygame 화면 Surface
-        self.image_folder_path = image_folder_path # 주사위 이미지가 저장된 폴더 경로
-        self.size = size # 주사위 이미지의 크기 (가로, 세로)
-        self.dice_imgs = self._load_dice_images() # 주사위 눈 이미지 리스트 로드
+    def __init__(self, screen, image_folder_path, size=(100, 100)):
+        """
+        DiceRoller 클래스의 생성자.
+        - screen: 주사위를 그릴 Pygame 화면 Surface 객체
+        - image_folder_path: 주사위 이미지가 저장된 폴더 경로
+        - size: 주사위 이미지의 크기 (기본값 100x100)
+        """
+        self.screen = screen  # 주사위가 그려질 화면
+        self.image_folder_path = image_folder_path  # 이미지 폴더 경로
+        self.size = size  # 주사위 이미지 크기 (너비, 높이)
+        self.dice_imgs = self._load_dice_images()  # 1~6 주사위 눈 이미지 불러오기
 
-    def _load_dice_images(self): # 주사위 눈 이미지를 불러오는 함수
+    def _load_dice_images(self):
+        """
+        dice1.png ~ dice6.png 이미지 파일을 불러와 리스트로 반환.
+        이미지 크기는 self.size로 조정됨.
+        """
         imgs = []
-        for i in range(1, 7): # 1~6까지 반복하여 각 눈 이미지를 불러옴
-            img_path = os.path.join(self.image_folder_path, f"dice{i}.png") # 이미지 파일 경로 생성
-            img = pygame.image.load(img_path) # 이미지 파일 로드
-            img = pygame.transform.scale(img, self.size) # 이미지 크기 조정
-            imgs.append(img) # 리스트에 추가
-        return imgs
+        for i in range(1, 7):  # 주사위 눈 1~6
+            img_path = os.path.join(self.image_folder_path, f"dice{i}.png")  # 이미지 파일 경로 생성
+            img = pygame.image.load(img_path)  # 이미지 파일 로드
+            img = pygame.transform.scale(img, self.size)  # 이미지 크기 조정
+            imgs.append(img)  # 리스트에 추가
+        return imgs  # 이미지 리스트 반환
 
     def roll_two_dice(self, group_pos=None, roll_times=20, delay=50):
         """
-        두 개의 주사위를 굴리고, 주사위 객체 그룹(배경+주사위들)을 원하는 위치에 그림.
-        group_pos: (x, y) - 주사위 객체 그룹의 좌상단 위치
-        roll_times: 주사위 굴리는 애니메이션 반복 횟수
-        delay: 각 프레임 사이의 지연(ms)
+        두 개의 주사위를 동시에 굴리는 함수. 애니메이션 포함.
+        - group_pos: 주사위 객체 그룹(배경 포함)의 좌상단 위치 (지정하지 않으면 화면 중앙)
+        - roll_times: 주사위가 굴러가는 애니메이션 프레임 수
+        - delay: 각 프레임 간 지연 시간 (ms 단위)
         """
-        dice_w, dice_h = self.size
-        gap = 40  # 두 주사위 사이의 간격
-        pad = 20  # 배경판의 여백
+        dice_w, dice_h = self.size  # 주사위 이미지 너비, 높이
+        gap = 40  # 주사위 사이 간격
+        pad = 20  # 배경 여백
 
-        # group_pos가 None이면 에러를 발생시키거나, 기본값을 왼쪽 고정 위치로 강제
+        # 배경판과 주사위 전체 그룹의 위치 및 크기 계산
         if group_pos is None:
-            # 중앙에 그리는 코드는 더 이상 필요 없음. 왼쪽 고정 위치로 강제.
-            group_pos = (44, 600)
-        bg_rect_x, bg_rect_y = group_pos
-        total_w = dice_w * 2 + gap
-        bg_rect_width = total_w + pad * 2
-        bg_rect_height = dice_h + pad * 2
+            # 위치가 주어지지 않았을 경우: 화면 중앙에 배치
+            screen_w, screen_h = self.screen.get_size()
+            total_w = dice_w * 2 + gap  # 두 주사위 + 간격
+            bg_rect_width = total_w + pad * 2
+            bg_rect_height = dice_h + pad * 2
+            bg_rect_x = (screen_w - bg_rect_width) // 2
+            bg_rect_y = (screen_h - bg_rect_height) // 2
+        else:
+            # 위치가 지정된 경우 해당 위치 사용
+            bg_rect_x, bg_rect_y = group_pos
+            total_w = dice_w * 2 + gap
+            bg_rect_width = total_w + pad * 2
+            bg_rect_height = dice_h + pad * 2
 
-        # 두 주사위의 실제 그릴 위치 계산
-        pos1 = (bg_rect_x + pad, bg_rect_y + pad)
-        pos2 = (bg_rect_x + pad + dice_w + gap, bg_rect_y + pad)
+        # 각 주사위의 실제 그려질 위치 계산
+        pos1 = (bg_rect_x + pad, bg_rect_y + pad)  # 첫 번째 주사위 위치
+        pos2 = (bg_rect_x + pad + dice_w + gap, bg_rect_y + pad)  # 두 번째 주사위 위치
 
-        idx1 = idx2 = 0 # 주사위 눈 인덱스
+        idx1 = idx2 = 0  # 주사위 눈 인덱스 초기값
 
         for _ in range(roll_times):
-            idx1 = random.randint(0, 5) # 첫 번째 주사위 눈(0~5)
-            idx2 = random.randint(0, 5) # 두 번째 주사위 눈(0~5)
+            # 주사위 눈 랜덤 설정 (0~5)
+            idx1 = random.randint(0, 5)
+            idx2 = random.randint(0, 5)
 
-            # 검은색 테두리(배경판보다 3px 크게)
+            # 배경 외곽 검은색 테두리
             pygame.draw.rect(
                 self.screen, (0, 0, 0),
                 (bg_rect_x - 3, bg_rect_y - 3, bg_rect_width + 6, bg_rect_height + 6),
                 border_radius=24
             )
-            # 하얀색 배경판
+            # 흰색 배경판
             pygame.draw.rect(
                 self.screen, (255, 255, 255),
                 (bg_rect_x, bg_rect_y, bg_rect_width, bg_rect_height),
                 border_radius=20
             )
 
-            # 두 주사위 이미지 그리기
+            # 두 주사위 눈 이미지 출력
             self.screen.blit(self.dice_imgs[idx1], pos1)
             self.screen.blit(self.dice_imgs[idx2], pos2)
-            pygame.display.update()
-            pygame.time.delay(delay)
+            pygame.display.update()  # 화면 업데이트
+            pygame.time.delay(delay)  # 프레임 간 딜레이
 
-        # 🎯 최종 결과를 다시 그려서 고정시킴
+        # 🎯 마지막으로 나온 주사위 눈을 다시 그려서 고정
         pygame.draw.rect(
             self.screen, (0, 0, 0),
             (bg_rect_x - 3, bg_rect_y - 3, bg_rect_width + 6, bg_rect_height + 6),
@@ -83,22 +101,25 @@ class DiceRoller:
         self.screen.blit(self.dice_imgs[idx1], pos1)
         self.screen.blit(self.dice_imgs[idx2], pos2)
         pygame.display.update()
-        time.sleep(1)
+        time.sleep(1)  # 1초 동안 결과를 보여줌
 
-        return idx1 + 1, idx2 + 1 # 실제 주사위 눈(1~6) 반환
+        return idx1 + 1, idx2 + 1  # 주사위 눈 1~6 반환
 
-    def roll_dice(self, group_pos=None):  # 위치 인자 추가
+    def roll_dice(self, group_pos=None):
         """
-        더블(같은 눈)이 나오면 다시 굴리는 규칙을 적용한 주사위 굴리기 함수.
-        group_pos: 주사위 객체 그룹의 좌상단 위치
+        🎲 주사위를 굴리고, 더블(같은 눈)이 나오면 다시 굴리는 규칙을 적용.
+        - group_pos: 주사위 그룹의 위치 (지정하지 않으면 화면 중앙)
+        - return: 두 주사위의 합 (총 이동 칸 수)
         """
-        result1, result2 = self.roll_two_dice(group_pos=group_pos)
+        result1, result2 = self.roll_two_dice(group_pos=group_pos)  # 첫 굴림
         print(f"🎲 주사위 결과: {result1}, {result2}")
-        step = (result1 + result2)
-        print(step, 0)
-        while result1 == result2: # 더블이면 다시 굴림
+        step = result1 + result2  # 이동 칸 수 초기값
+
+        # 🎲 더블(같은 눈)이 나올 경우 반복
+        while result1 == result2:
             result1, result2 = self.roll_two_dice(group_pos=group_pos)
             print(f"🎲 주사위 결과: {result1}, {result2}")
-            step += (result1 + result2)
-            print(step, 1)
-        return step # 총 이동 칸 수 반환
+            step += (result1 + result2)  # 이동 칸 누적
+
+        print(step, 1 if result1 == result2 else 0)  # 디버깅용 출력
+        return step  # 총 이동 칸 수 반환
