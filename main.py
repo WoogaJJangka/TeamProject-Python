@@ -435,9 +435,7 @@ while running: # 게임이 실행중인 동안
                     game_manager.turn_over()
                 elif getattr(current_player, 'stop_turns', 0) > 0:
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-
-                    dice1, dice2 = roller.roll_two_dice(group_pos=(44, 600))
-
+                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
                     add_console_message(f"주사위 결과: {dice1}, {dice2}")
                     if dice1 == dice2:
                         steps = dice1 + dice2
@@ -454,11 +452,16 @@ while running: # 게임이 실행중인 동안
                         current_player.stop_turns -= 1
                         game_manager.turn_over()
                 else:
-                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
-                    steps = dice1 + dice2
-                    add_console_message(f"주사위 결과: {dice1}, {dice2}")
+                    steps = 0
+                    while True:
+                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
+                        steps += dice1 + dice2
+                        if dice1 == dice2:
+                            continue
+                        else:
+                            break
                     current_player.move(steps)
-                    add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
+                    add_console_message(f"{current_player.color} 플레이어가  {steps}칸 이동했습니다.")
                     player_index = game_manager.current_player_index
                     result = handle_tile_event_after_move(current_player, player_index)
                     if result == 'exit':
