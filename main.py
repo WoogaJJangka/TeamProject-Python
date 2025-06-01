@@ -209,16 +209,16 @@ def add_console_message(msg):
         console_messages.pop()
 
 
-# 콘솔 메시지 그리기 함수: 화면 왼쪽 중앙에 최대 8줄, 폰트 크기 10, 배경 없이 텍스트만 표시
+# 콘솔 메시지 그리기 함수: 화면 왼쪽 중앙에 최대 8줄, 폰트 크기 16, 배경 없이 텍스트만 표시
 def draw_console_messages(surface):
-    font = pygame.font.Font("board_set/font.ttf", 10)
+    font = pygame.font.Font("board_set/font.ttf", 16)
     start_y = background.get_height() // 2 - (MAX_CONSOLE_LINES * 20)
-    box_width = 290
+    box_width = 300
     box_height = MAX_CONSOLE_LINES * 80  # 충분히 크게
     s = pygame.Surface((box_width, box_height))
     s.fill((255, 255, 255))
     surface.blit(s, (40, start_y - 2))
-    max_chars = 30
+    max_chars = 22
     # 아래에서 위로 출력: y를 아래에서 시작해서 위로 감소
     y = start_y + (MAX_CONSOLE_LINES - 1) * 20  # 가장 아래에서 시작
     all_lines = []
@@ -435,7 +435,9 @@ while running: # 게임이 실행중인 동안
                     game_manager.turn_over()
                 elif getattr(current_player, 'stop_turns', 0) > 0:
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
+
+                    dice1, dice2 = roller.roll_two_dice(group_pos=(44, 600))
+
                     add_console_message(f"주사위 결과: {dice1}, {dice2}")
                     if dice1 == dice2:
                         steps = dice1 + dice2
