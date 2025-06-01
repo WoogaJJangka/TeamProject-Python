@@ -211,14 +211,14 @@ def add_console_message(msg):
 
 # 콘솔 메시지 그리기 함수: 화면 왼쪽 중앙에 최대 8줄, 폰트 크기 10, 배경 없이 텍스트만 표시
 def draw_console_messages(surface):
-    font = pygame.font.Font("board_set/font.ttf", 10)
+    font = pygame.font.Font("board_set/font.ttf", 16)
     start_y = background.get_height() // 2 - (MAX_CONSOLE_LINES * 20)
-    box_width = 290
+    box_width = 300
     box_height = MAX_CONSOLE_LINES * 80  # 충분히 크게
     s = pygame.Surface((box_width, box_height))
     s.fill((255, 255, 255))
     surface.blit(s, (40, start_y - 2))
-    max_chars = 30
+    max_chars = 22
     # 아래에서 위로 출력: y를 아래에서 시작해서 위로 감소
     y = start_y + (MAX_CONSOLE_LINES - 1) * 20  # 가장 아래에서 시작
     all_lines = []
