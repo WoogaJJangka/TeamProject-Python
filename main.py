@@ -506,4 +506,5 @@ while running:  # 게임이 실행중인 동안 반복
                     break
     pygame.display.update()  # 화면 업데이트 함수 (모든 그리기 후 반드시 호출)
 
+print("프로그램 종료") # 디버깅용 종료 메시지 (실행 확인)
 pygame.quit()  # 게임 종료 함수 (메인 루프 탈출 시)
