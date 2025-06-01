@@ -429,12 +429,13 @@ while running: # 게임이 실행중인 동안
             if event.key == pygame.K_SPACE:
                 current_player = game_manager.get_current_player()
                 add_console_message(f"{current_player.color} 플레이어의 턴입니다.") # 현재 플레이어 턴 메시지
+                dice_pos = (44, 600)  # 항상 왼쪽 지정 위치에 주사위 표시
                 if current_player.is_bankrupt: # 파산 상태인 플레이어는 턴을 넘김
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 elif getattr(current_player, 'stop_turns', 0) > 0:
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-                    dice1, dice2 = roller.roll_two_dice()
+                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
                     add_console_message(f"주사위 결과: {dice1}, {dice2}")
                     if dice1 == dice2:
                         steps = dice1 + dice2
@@ -451,7 +452,9 @@ while running: # 게임이 실행중인 동안
                         current_player.stop_turns -= 1
                         game_manager.turn_over()
                 else:
-                    steps = roller.roll_dice(group_pos=(44, 600))  # 주사위 위치 조정(group_pos=(좌표)), (0, 0)은 화면 좌측 상단
+                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
+                    steps = dice1 + dice2
+                    add_console_message(f"주사위 결과: {dice1}, {dice2}")
                     current_player.move(steps)
                     add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     player_index = game_manager.current_player_index

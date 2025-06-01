@@ -31,21 +31,14 @@ class DiceRoller:
         gap = 40  # 두 주사위 사이의 간격
         pad = 20  # 배경판의 여백
 
-        # 주사위 객체 그룹(배경+주사위들)의 위치와 크기 계산
+        # group_pos가 None이면 에러를 발생시키거나, 기본값을 왼쪽 고정 위치로 강제
         if group_pos is None:
-            # 위치를 지정하지 않으면 화면 중앙에 배치
-            screen_w, screen_h = self.screen.get_size()
-            total_w = dice_w * 2 + gap
-            bg_rect_width = total_w + pad * 2
-            bg_rect_height = dice_h + pad * 2
-            bg_rect_x = (screen_w - bg_rect_width) // 2
-            bg_rect_y = (screen_h - bg_rect_height) // 2
-        else:
-            # 지정된 위치에 배치
-            bg_rect_x, bg_rect_y = group_pos
-            total_w = dice_w * 2 + gap
-            bg_rect_width = total_w + pad * 2
-            bg_rect_height = dice_h + pad * 2
+            # 중앙에 그리는 코드는 더 이상 필요 없음. 왼쪽 고정 위치로 강제.
+            group_pos = (44, 600)
+        bg_rect_x, bg_rect_y = group_pos
+        total_w = dice_w * 2 + gap
+        bg_rect_width = total_w + pad * 2
+        bg_rect_height = dice_h + pad * 2
 
         # 두 주사위의 실제 그릴 위치 계산
         pos1 = (bg_rect_x + pad, bg_rect_y + pad)
