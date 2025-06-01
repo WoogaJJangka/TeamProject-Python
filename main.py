@@ -335,41 +335,41 @@ while running:  # 게임이 실행중인 동안 반복
 
     # --- 타일 정보창 표시 (마우스 올린 타일 or 현재 플레이어 위치) ---
     if highlight_tile:
-        highlight_tile.draw_info(background, pos=(50, 50))  # 마우스 올린 타일 정보
+        highlight_tile.draw_info(background, pos=(50, 50))  # 마우스가 올려진 타일의 상세 정보 표시 (좌측 상단)
     else:
         current_tile = tiles[game_manager.get_current_player().position]
-        current_tile.draw_info(background, pos=(50, 50))  # 현재 플레이어 위치 타일 정보
+        current_tile.draw_info(background, pos=(50, 50))  # 마우스를 올리지 않은 경우, 현재 플레이어가 위치한 타일 정보 표시
 
     # --- 플레이어 정보창 및 말 그리기 ---
     for idx, p in enumerate(game_manager.players):
-        p.draw_info(background, pos=(1200, 50 + idx * 160))  # 플레이어 정보창
+        p.draw_info(background, pos=(1200, 50 + idx * 160))  # 각 플레이어의 정보(이름, 돈, 소유 땅 등)를 우측에 표시
     for idx in range(len(game_manager.players)):
-        pygame.draw.rect(background, (255,255,255), (1195, 45 + idx*160, 260, 160), 4)  # 정보창 테두리
+        pygame.draw.rect(background, (255,255,255), (1195, 45 + idx*160, 260, 160), 4)  # 각 플레이어 정보창에 흰색 테두리
     idx = game_manager.current_player_index
-    pygame.draw.rect(background, (255,0,0), (1195, 45 + idx*160, 260, 160), 4)  # 현재 턴 플레이어 강조
+    pygame.draw.rect(background, (255,0,0), (1195, 45 + idx*160, 260, 160), 4)  # 현재 턴인 플레이어의 정보창만 빨간색 테두리로 강조
     for idx, p in enumerate(game_manager.players):
-        tile = tiles[p.position]
-        orig_pos = tile.player_positions[p.turn]
-        pos = (orig_pos[0] + 10, orig_pos[1] + 10)
-        img_rect = p.piece_image.get_rect(center=(int(pos[0]), int(pos[1])))
-        background.blit(p.piece_image, img_rect)  # 말 이미지 그리기
+        tile = tiles[p.position]  # 플레이어가 위치한 타일 객체
+        orig_pos = tile.player_positions[p.turn]  # 해당 타일에서 플레이어 말의 기본 위치(좌표)
+        pos = (orig_pos[0] + 10, orig_pos[1] + 10)  # 말 위치를 약간 보정하여 겹침 방지
+        img_rect = p.piece_image.get_rect(center=(int(pos[0]), int(pos[1])))  # 말 이미지의 중심 좌표 계산
+        background.blit(p.piece_image, img_rect)  # 실제로 말 이미지를 보드에 그림
 
     # --- 콘솔 메시지 그리기 ---
-    draw_console_messages(background)  # 콘솔 메시지 그리기 함수 (좌측)
+    draw_console_messages(background)  # 좌측 중앙에 최근 게임 메시지(이벤트, 안내 등) 출력
 
     # --- 구매/업그레이드 질문 및 버튼 그리기 ---
     if ask_buy:
         font_q = pygame.font.Font("board_set/font.ttf", 18)
         question = font_q.render("땅을 구매하겠습니까?", True, (0,0,0))
-        background.blit(question, (60, background.get_height()-180))
+        background.blit(question, (60, background.get_height()-180))  # 질문 텍스트를 좌측 하단에 표시
         for btn in buy_buttons:
-            btn.draw(background)
+            btn.draw(background)  # 예/아니요 버튼을 그리기
     if ask_upgrade:
         font_q = pygame.font.Font("board_set/font.ttf", 18)
         question = font_q.render("땅을 업그레이드 하시겠습니까?", True, (0,0,0))
-        background.blit(question, (60, background.get_height()-180))
+        background.blit(question, (60, background.get_height()-180))  # 업그레이드 질문 텍스트
         for btn in upgrade_buttons:
-            btn.draw(background)
+            btn.draw(background)  # 업그레이드 예/아니요 버튼
 
     # --- pygame 이벤트 처리 (마우스, 키보드 등) ---
     for event in pygame.event.get():
@@ -451,6 +451,9 @@ while running:  # 게임이 실행중인 동안 반복
                         current_player.move(steps)  # 플레이어 이동
                         add_console_message(f"두 눈이 같아 {steps}칸 이동합니다!")
                         current_player.stop_turns = 0  # 이동불가 해제
+                        # 더블 보너스 500원 지급
+                        current_player.money += 500
+                        add_console_message(f"더블 보너스! 500원을 받았습니다.")
                         player_index = game_manager.current_player_index
                         result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
                         if result == 'exit':
@@ -464,16 +467,20 @@ while running:  # 게임이 실행중인 동안 반복
                 else:
                     # 일반 이동: 더블이면 즉시 재굴림, 누적 이동, 더블이 아닐 때만 이동 후 이벤트
                     steps = 0  # 누적 이동 칸수
+                    double_count = 0  # 더블 횟수 카운트 (더블이 몇 번 나왔는지 추적)
                     while True:
-                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
-                        steps += dice1 + dice2  # 누적 이동
+                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
+                        steps += dice1 + dice2  # 이번에 나온 주사위 눈의 합을 누적 이동 칸수에 더함
                         if dice1 == dice2:
-                            # 더블이면 즉시 재굴림 (턴 유지, steps 누적)
-                            continue
+                            # 더블(두 눈이 같음)이 나오면
+                            double_count += 1  # 더블 횟수 증가
+                            current_player.money += 500  # 플레이어에게 500원 보너스 지급
+                            add_console_message(f"더블 보너스! 500원을 받았습니다.")  # 콘솔에 안내 메시지 출력
+                            continue  # 턴을 넘기지 않고 즉시 다시 주사위 굴림(steps 누적)
                         else:
-                            # 더블이 아니면 이동 후 이벤트 처리
+                            # 더블이 아니면 반복 종료, 누적 steps만큼 이동
                             break
-                    current_player.move(steps)  # 누적 칸수만큼 이동
+                    current_player.move(steps)  # 누적된 칸수만큼 플레이어 이동
                     add_console_message(f"{current_player.color} 플레이어가  {steps}칸 이동했습니다.")
                     player_index = game_manager.current_player_index
                     result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
