@@ -443,8 +443,8 @@ while running:  # 게임이 실행중인 동안 반복
                 elif getattr(current_player, 'stop_turns', 0) > 0:
                     # 무주도 등 이동불가 상태면 주사위 굴리기
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
-                    add_console_message(f"주사위 결과: {dice1}, {dice2}")
+                    dice1, dice2, message = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
+                    add_console_message(message)
                     if dice1 == dice2:
                         # 더블이 나오면 즉시 이동 및 이동불가 해제
                         steps = dice1 + dice2
@@ -467,7 +467,8 @@ while running:  # 게임이 실행중인 동안 반복
                     steps = 0  # 누적 이동 칸수
                     double_count = 0  # 더블 횟수 카운트 (더블이 몇 번 나왔는지 추적)
                     while True:
-                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
+                        dice1, dice2 , message = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
+                        add_console_message(message)  # 주사위 결과 메시지 출력
                         steps += dice1 + dice2  # 이번에 나온 주사위 눈의 합을 누적 이동 칸수에 더함
                         if dice1 == dice2:
                             # 더블(두 눈이 같음)이 나오면
