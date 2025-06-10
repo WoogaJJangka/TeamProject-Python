@@ -9,6 +9,8 @@ import game.player as player                   # 플레이어 클래스 (플레�
 
 print("게임 시작")  # 디버깅용 시작 메시지 (실행 확인)
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))  # 현재 작업 디렉토리를 스크립트 위치로 설정
+
 # --- pygame 초기화 및 화면 설정 ---
 pygame.init()  # pygame 라이브러리 내부 상태 초기화 (필수)
 clock = pygame.time.Clock()  # 프레임 조절용 시계 객체 (게임 루프 속도 제어)
@@ -116,10 +118,7 @@ def handle_tile_event_after_move(current_player, player_index):
                     highlight_tile = tile
                     break
             for tile in tiles:
-                if tile is highlight_tile:
-                    tile.visual.draw(background, tile.name, highlight=True)
-                else:
-                    tile.visual.draw(background, tile.name, highlight=False)
+                tile.visual.draw(background, tile.name, highlight=(tile is highlight_tile))
             if highlight_tile:
                 highlight_tile.draw_info(background, pos=(50, 50))
             for idx, p in enumerate(game_manager.players):
@@ -435,28 +434,25 @@ while running:  # 게임이 실행중인 동안 반복
                 # [스페이스바] 현재 플레이어의 차례에 주사위 굴리기
                 current_player = game_manager.get_current_player()  # 현재 차례 플레이어 객체
                 add_console_message(f"{current_player.color} 플레이어의 턴입니다.")
-                dice_pos = (44, 600)  # 항상 왼쪽 지정 위치에 주사위 표시
+                dice_pos = (44, 600)  # 주사위 표시 위치
                 if current_player.is_bankrupt:
-                    # 파산 상태면 턴 넘김 (아무 동작 없음)
                     add_console_message(f"{game_manager.get_current_player_color()} 플레이어는 파산 상태입니다. 턴을 넘깁니다.")
                     game_manager.turn_over()
                 elif getattr(current_player, 'stop_turns', 0) > 0:
-                    # 무주도 등 이동불가 상태면 주사위 굴리기
+                    # 무주도 등 이동불가 상태
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
+                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
                     add_console_message(f"주사위 결과: {dice1}, {dice2}")
                     if dice1 == dice2:
-                        # 더블이 나오면 즉시 이동 및 이동불가 해제
+                        # 더블: 즉시 이동 및 이동불가 해제
                         steps = dice1 + dice2
-                        current_player.move(steps)  # 플레이어 이동
+                        current_player.move(steps)
                         add_console_message(f"두 눈이 같아 {steps}칸 이동합니다!")
-                        current_player.stop_turns = 0  # 이동불가 해제
-                        # 더블 보너스 지급 없음 (무주도에서 나올 때)
+                        current_player.stop_turns = 0
                         player_index = game_manager.current_player_index
-                        result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
+                        result = handle_tile_event_after_move(current_player, player_index)
                         if result == 'exit':
                             running = False
-                            break
                     else:
                         # 더블이 아니면 이동불가 턴 차감 후 턴 넘김
                         add_console_message("이동하지 못합니다.")
@@ -465,26 +461,23 @@ while running:  # 게임이 실행중인 동안 반복
                 else:
                     # 일반 이동: 더블이면 즉시 재굴림, 누적 이동, 더블이 아닐 때만 이동 후 이벤트
                     steps = 0  # 누적 이동 칸수
-                    double_count = 0  # 더블 횟수 카운트 (더블이 몇 번 나왔는지 추적)
+                    double_count = 0  # 더블 횟수
                     while True:
-                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
-                        steps += dice1 + dice2  # 이번에 나온 주사위 눈의 합을 누적 이동 칸수에 더함
+                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)
+                        add_console_message(f"주사위 결과: {dice1}, {dice2}")
+                        steps += dice1 + dice2
                         if dice1 == dice2:
-                            # 더블(두 눈이 같음)이 나오면
-                            double_count += 1  # 더블 횟수 증가
-                            current_player.money += 500  # 플레이어에게 500원 보너스 지급
-                            add_console_message(f"더블 보너스! 500원을 받았습니다.")  # 콘솔에 안내 메시지 출력
-                            continue  # 턴을 넘기지 않고 즉시 다시 주사위 굴림(steps 누적)
-                        else:
-                            # 더블이 아니면 반복 종료, 누적 steps만큼 이동
-                            break
-                    current_player.move(steps)  # 누적된 칸수만큼 플레이어 이동
-                    add_console_message(f"{current_player.color} 플레이어가  {steps}칸 이동했습니다.")
+                            double_count += 1
+                            current_player.money += 500
+                            add_console_message(f"더블! 500원 보너스. (연속 {double_count}회)")
+                            continue  # 더블이면 한 번 더
+                        break  # 더블이 아니면 반복 종료
+                    current_player.move(steps)
+                    add_console_message(f"{current_player.color} 플레이어가 {steps}칸 이동했습니다.")
                     player_index = game_manager.current_player_index
-                    result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
+                    result = handle_tile_event_after_move(current_player, player_index)
                     if result == 'exit':
                         running = False
-                        break
             elif event.key == pygame.K_p and pygame.key.get_pressed()[pygame.K_F1]:
                 # [F1+P] 모든 플레이어 위치 출력 (디버깅용 핫키)
                 add_console_message(f'현제 플레이어들의 위치: {[p.position for p in game_manager.players]}')
