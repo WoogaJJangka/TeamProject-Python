@@ -102,4 +102,5 @@ class DiceRoller:
         self.screen.blit(self.dice_imgs[idx2], pos2)
         pygame.display.update()
         time.sleep(1)  # 1초 동안 결과를 보여줌
-        return idx1 + 1, idx2 + 1 # 실제 주사위 눈(1~6) 반환
+        log = f"주사위 결과: {idx1 + 1}, {idx2 + 1}"
+        return idx1 + 1, idx2 + 1, log # 실제 주사위 눈(1~6) 반환 

@@ -32,11 +32,7 @@ class GameManager:
 
     def buy_tile(self, tile_index, player_index):
         ''' 타일 구매 시도 함수 '''
-        special_tile_names = ["출도", "학", "무주도", "미정"]  # 특수 타일 이름 목록
         tile = self.tiles[tile_index]  # 현재 타일 객체
-        if tile.name in special_tile_names:
-            msg = f"{tile.name} 칸은 구매할 수 없습니다."
-            return False, msg  # 특수 타일은 구매 불가
         player = self.players[player_index]  # 현재 플레이어 객체
         # 돈이 부족하면 구매 불가, 돈 차감도 하지 않음
         if player.money < tile.price:
@@ -52,9 +48,6 @@ class GameManager:
         ''' 소유한 타일 업그레이드 시도 '''
         player = self.players[player_index]  # 현재 플레이어 객체
         tile = self.tiles[tile_index]  # 현재 타일 객체
-        if tile.owner != player:
-            msg = f"{tile.name}은(는) {player.color} 플레이어의 소유가 아닙니다."
-            return False, msg  # 본인 소유가 아니면 업그레이드 불가
         if tile.upgrade_level >= 2:
             msg = f"{tile.name}은(는) 이미 최대 업그레이드 상태입니다."
             return False, msg  # 이미 최대 업그레이드
@@ -73,12 +66,6 @@ class GameManager:
         ''' 타일 통행료 지불 처리 '''
         player = self.players[player_index]  # 현재 플레이어 객체
         tile = self.tiles[tile_index]  # 현재 타일 객체
-
-        # 무주택지 또는 자기 땅이면 통행료 없음
-        if tile.owner is None or tile.owner == player:
-            msg = "통행료를 지불할 필요가 없습니다."
-            return False, msg
-
         toll = tile.toll  # 통행료 금액
         # 1. 돈이 부족하면 건물 매각 시도
         if player.money < toll and player.properties:

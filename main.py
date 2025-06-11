@@ -57,12 +57,6 @@ def handle_tile_event_after_move(current_player, player_index):
         current_player.money += 2000  # 출도 보너스 지급
         add_console_message(f"{current_player.color} 플레이어가 출도 칸에 도착했습니다. 2000원을 받았습니다.")
         game_manager.turn_over()  # 턴 넘김
-        winner_tuple = game_manager.check_winner()  # 우승자 체크
-        winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
-        if winner:
-            add_winner_message(winner, reason)  # 우승 메시지 출력
-            return False
-        return True
     elif current_player.position == 5:  # 미정 칸
         # 소유한 땅이 있으면 업그레이드 시도, 없으면 메시지 출력
         if current_player.properties:
@@ -100,7 +94,6 @@ def handle_tile_event_after_move(current_player, player_index):
                         if tile.is_clicked(mouse_pos):
                             if idx == 15:
                                 add_console_message("학 타일로는 순간이동할 수 없습니다.")
-                                pass
                             else:
                                 success, message = game_manager.teleport_player(player_index, idx)
                                 add_console_message(message)
@@ -134,11 +127,6 @@ def handle_tile_event_after_move(current_player, player_index):
             if current_player.money < arrived_tile.price:
                 add_console_message(f"{current_player.color} 플레이어는 {arrived_tile.name}을(를) 구매할 돈이 부족합니다.")
                 game_manager.turn_over()
-                winner_tuple = game_manager.check_winner()
-                winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
-                if winner:
-                    add_winner_message(winner, reason)
-                return True
             # 구매 질문 상태 진입 (버튼 표시)
             ask_buy = True
             buy_tile_index = current_player.position
@@ -155,11 +143,6 @@ def handle_tile_event_after_move(current_player, player_index):
             if current_player.money < upgrade_cost:
                 add_console_message(f"{current_player.color} 플레이어는 업그레이드 비용 ₩{upgrade_cost}가 부족합니다.")
                 game_manager.turn_over()
-                winner_tuple = game_manager.check_winner()
-                winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
-                if winner:
-                    add_winner_message(winner, reason)
-                return True
             # 업그레이드 질문 상태 진입 (버튼 표시)
             ask_upgrade = True
             upgrade_tile_index = current_player.position
@@ -382,11 +365,6 @@ while running:  # 게임이 실행중인 동안 반복
             for idx, btn in enumerate(buy_buttons):
                 if btn.is_clicked(event.pos):  # 해당 버튼이 클릭되었는지 확인
                     if idx == 0:  # 예 버튼 클릭 시
-                        special_tile_names = ["출도", "학", "무주도", "미정"]
-                        tile = tiles[buy_tile_index]
-                        if tile.name in special_tile_names:
-                            add_console_message(f"{tile.name} 칸은 구매할 수 없습니다.")  # 특수 타일은 구매 불가
-                        else:
                             success, message = game_manager.buy_tile(buy_tile_index, buy_player_index)  # 타일 구매 시도
                             add_console_message(message)  # 구매 결과 메시지 출력
                     else:  # 아니요 버튼 클릭 시
@@ -421,13 +399,6 @@ while running:  # 게임이 실행중인 동안 반복
                     upgrade_player_index = None
                     upgrade_buttons = []
                     game_manager.turn_over()  # 턴 넘김 (업그레이드 여부와 무관하게)
-                    # 업그레이드 후 파산 등으로 인한 우승자 체크
-                    winner_tuple = game_manager.check_winner()
-                    winner, reason = winner_tuple if isinstance(winner_tuple, tuple) else (winner_tuple, None)
-                    if winner:
-                        add_winner_message(winner, reason)  # 우승 메시지 출력
-                        running = False
-                    break
 
         # 일반적인 키보드 이벤트 처리 (주사위 굴리기, 디버깅 핫키 등)
         elif not ask_buy and not ask_upgrade and event.type == pygame.KEYDOWN:
@@ -443,8 +414,8 @@ while running:  # 게임이 실행중인 동안 반복
                 elif getattr(current_player, 'stop_turns', 0) > 0:
                     # 무주도 등 이동불가 상태면 주사위 굴리기
                     add_console_message(f"{current_player.color} 플레이어는 이동불가 상태입니다. (남은 턴: {current_player.stop_turns})")
-                    dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
-                    add_console_message(f"주사위 결과: {dice1}, {dice2}")
+                    dice1, dice2, message = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 굴리기
+                    add_console_message(message)
                     if dice1 == dice2:
                         # 더블이 나오면 즉시 이동 및 이동불가 해제
                         steps = dice1 + dice2
@@ -454,7 +425,7 @@ while running:  # 게임이 실행중인 동안 반복
                         # 더블 보너스 지급 없음 (무주도에서 나올 때)
                         player_index = game_manager.current_player_index
                         result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
-                        if result == 'exit':
+                        if result is False:
                             running = False
                             break
                     else:
@@ -467,7 +438,8 @@ while running:  # 게임이 실행중인 동안 반복
                     steps = 0  # 누적 이동 칸수
                     double_count = 0  # 더블 횟수 카운트 (더블이 몇 번 나왔는지 추적)
                     while True:
-                        dice1, dice2 = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
+                        dice1, dice2 , message = roller.roll_two_dice(group_pos=dice_pos)  # 주사위 두 개를 굴림
+                        add_console_message(message)  # 주사위 결과 메시지 출력
                         steps += dice1 + dice2  # 이번에 나온 주사위 눈의 합을 누적 이동 칸수에 더함
                         if dice1 == dice2:
                             # 더블(두 눈이 같음)이 나오면
@@ -482,7 +454,7 @@ while running:  # 게임이 실행중인 동안 반복
                     add_console_message(f"{current_player.color} 플레이어가  {steps}칸 이동했습니다.")
                     player_index = game_manager.current_player_index
                     result = handle_tile_event_after_move(current_player, player_index)  # 도착 타일 이벤트 처리
-                    if result == 'exit':
+                    if result is False:
                         running = False
                         break
             elif event.key == pygame.K_p and pygame.key.get_pressed()[pygame.K_F1]:
