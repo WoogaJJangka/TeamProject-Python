@@ -1,13 +1,19 @@
-# --- 라이브러리 및 모듈 임포트 ---
-import pygame  # pygame: 파이썬 게임 개발용 라이브러리
-import os  # os: 파일 경로 조작 등 운영체제 기능 사용
-from board_set.BoardScreen import BoardScreen  # 보드 화면 그리기 클래스 (보드판 이미지 및 타일 배치)
-from roll_dices.roller import DiceRoller      # 주사위 굴리기 클래스 (주사위 이미지, 애니메이션 등)
-from game.tile_info import all_tiles           # 타일 정보 및 타일 객체 생성 함수
-import game.game_manager as gm                 # 게임 상태 관리 클래스 (턴, 타일, 플레이어 등)
-import game.player as player                   # 플레이어 클래스 (플레이어 속성, 이동 등)
+"""
+조선 유람 (Joseon Tour) - 게임 시작 진입점
+"""
+import sys
+import os
+import pygame
 
-print("게임 시작")  # 디버깅용 시작 메시지 (실행 확인)
+# 프로젝트 루트를 Python 경로에 추가
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from src.app import main
+
+if __name__ == "__main__":
+    main()
 
 # --- pygame 초기화 및 화면 설정 ---
 pygame.init()  # pygame 라이브러리 내부 상태 초기화 (필수)
