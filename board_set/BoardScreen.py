@@ -1,6 +1,10 @@
+from pathlib import Path
+
 import pygame
 
-def BoardScreen(background): # 보드판 배경 그리기
+
+def BoardScreen(background, project_root=None): # 보드판 배경 그리기
+    project_root = Path(project_root or Path(__file__).resolve().parent.parent)
 
     # 큰 사각형 3 개 그리기
 
@@ -36,12 +40,12 @@ def BoardScreen(background): # 보드판 배경 그리기
 
     # 한반도 사진 넣기
 
-    img_han = pygame.image.load("board_set/한반도.png") # 한반도 사진 불러오기
+    img_han = pygame.image.load(str(project_root / "board_set" / "한반도.png")) # 한반도 사진 불러오기
     img_han = pygame.transform.scale(img_han,(200,400)) # 사진 크기 조정
     background.blit(img_han,(650,300)) # 사진 위치 조정
 
     # 게임 판에 중앙 글씨 넣기(조선 유람)
-    font = pygame.font.Font("board_set/font.ttf", 60)  # 폰트, 크기 조정
+    font = pygame.font.Font(str(project_root / "board_set" / "font.ttf"), 60)  # 폰트, 크기 조정
 
     rendered1 = font.render("조선", True, (0, 0, 0))  # 조선 색깔
     rendered2 = font.render("유람", True, (0, 0, 0))  # 유람 색깔

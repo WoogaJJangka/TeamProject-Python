@@ -1,19 +1,21 @@
-from game.tile_info import all_tiles  # 타일 정보와 시각 객체를 포함한 타일 리스트 생성 함수
-from game.player import Player  # 플레이어 클래스
+from game.tile_info import all_tiles
+from game.player import Player
 
 # 게임의 상태를 관리하는 클래스
 class GameManager:
-    ''' 게임의 상태를 관리하는 클래스 '''
+    """게임 규칙과 현재 턴을 관리하는 도메인 객체."""
 
-    def __init__(self):
-        # 네 명의 플레이어 초기화 (항상 인덱스 0~3, 색상 순서 고정)
-        self.players = [
-            Player(0, 'red'), Player(1, 'blue'),
-            Player(2, 'green'), Player(3, 'yellow')
+    PLAYER_COLORS = ("red", "blue", "green", "yellow")
+    STARTING_MONEY = 5000
+    SPECIAL_TILE_NAMES = {"출도", "학", "무주도", "미정"}
+
+    def __init__(self, players=None, tiles=None):
+        self.players = players if players is not None else [
+            Player(index, color) for index, color in enumerate(self.PLAYER_COLORS)
         ]
-        self.current_player_index = 0  # 현재 턴인 플레이어의 인덱스
-        self.tiles = all_tiles()  # 전체 타일 생성 (tile_info에서 시각 타일 포함하여 생성)
-        self.board_size = len(self.tiles)  # 보드판의 크기 (타일 수)
+        self.current_player_index = 0
+        self.tiles = tiles if tiles is not None else all_tiles()
+        self.board_size = len(self.tiles)
 
     def get_current_player_color(self):
         ''' 현재 플레이어의 색상 반환 '''
@@ -24,17 +26,15 @@ class GameManager:
         return self.players[self.current_player_index]
 
     def turn_over(self):
-        # 다음 플레이어로 턴 넘기기 (0→1→2→3→0)
-        self.current_player_index = (self.current_player_index + 1) % 4
+        self.current_player_index = (self.current_player_index + 1) % len(self.players)
         next_player = self.players[self.current_player_index]
         print(f"다음 턴: {next_player.color} 플레이어")
         return self.current_player_index
 
     def buy_tile(self, tile_index, player_index):
         ''' 타일 구매 시도 함수 '''
-        special_tile_names = ["출도", "학", "무주도", "미정"]  # 특수 타일 이름 목록
         tile = self.tiles[tile_index]  # 현재 타일 객체
-        if tile.name in special_tile_names:
+        if tile.name in self.SPECIAL_TILE_NAMES:
             msg = f"{tile.name} 칸은 구매할 수 없습니다."
             return False, msg  # 특수 타일은 구매 불가
         player = self.players[player_index]  # 현재 플레이어 객체
